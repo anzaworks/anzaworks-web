@@ -1,0 +1,1 @@
+Place the approved Anza Works logo files here when available: logo.png, icon.png, logo-light.png and logo-dark.png. The website currently uses a clearly typographic AW fallback, not an official replacement logo.
