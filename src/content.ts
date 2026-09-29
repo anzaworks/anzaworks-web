@@ -2,6 +2,7 @@ export const site = {
   name: "Anza Works",
   origin: "https://anzaworks.lk",
   email: "hello@anzaworks.lk",
+  social: { GitHub: null, Instagram: null, LinkedIn: null, WhatsApp: null } as Record<string, string | null>,
   description: "Anza Works designs and builds distinctive websites, software and digital systems for ambitious businesses."
 } as const;
 

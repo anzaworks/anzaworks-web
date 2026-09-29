@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = new URL('../site/', import.meta.url).pathname;
@@ -45,4 +45,18 @@ test('public boundary and utility files are present', () => {
   assert.match(readFileSync(join(root, 'contact/index.html'), 'utf8'), /mailto:hello@anzaworks.lk/);
   assert.match(readFileSync(join(root, '404.html'), 'utf8'), /name="robots" content="noindex"/);
   assert.ok(readdirSync(join(root)).every(name => name !== 'admin'));
+});
+
+test('approved hero media is local, lightweight and accessible from the homepage', () => {
+  const html = readFileSync(join(root, 'index.html'), 'utf8');
+  const css = readFileSync(join(root, 'style.css'), 'utf8');
+  const mp4 = join(root, 'media/hero/anza-hero.mp4');
+  const poster = join(root, 'media/hero/anza-hero-poster.webp');
+  assert.ok(existsSync(mp4));
+  assert.ok(existsSync(poster));
+  assert.ok(statSync(mp4).size < 1_500_000);
+  assert.match(html, /<video class="hero-video" autoplay muted playsinline[^>]*poster="\/media\/hero\/anza-hero-poster.webp"/);
+  assert.match(html, /<source src="\/media\/hero\/anza-hero.mp4" type="video\/mp4">/);
+  assert.match(css, /prefers-reduced-motion:reduce/);
+  for (const id of ['featured', 'capabilities', 'about', 'process', 'faq', 'contact']) assert.match(html, new RegExp('id="' + id + '"'));
 });

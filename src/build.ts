@@ -7,8 +7,7 @@ const out = join(root, "site");
 const esc = (value: unknown): string => String(value).replace(/[&<>"']/g, character =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character);
 const attr = esc;
-const navItems = [["/", "Home"], ["/work/", "Work"], ["/services/", "Services"],
-  ["/about/", "About"], ["/process/", "Process"], ["/contact/", "Contact"]] as const;
+const navItems = [["/work/", "Work"], ["/about/", "About"], ["/services/", "Services"], ["/contact/", "Contact"]] as const;
 
 function page(path: string, title: string, description: string, body: string, options: { noindex?: boolean; type?: string } = {}): void {
   const url = site.origin + path;
@@ -18,7 +17,7 @@ function page(path: string, title: string, description: string, body: string, op
   const head = [
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width,initial-scale=1">',
-    '<meta name="theme-color" content="#060912">',
+    '<meta name="theme-color" content="#050505">',
     options.noindex ? '<meta name="robots" content="noindex">' : "",
     '<title>' + esc(title) + ' | Anza Works</title>',
     '<meta name="description" content="' + attr(description) + '">',
@@ -34,21 +33,22 @@ function page(path: string, title: string, description: string, body: string, op
     '<meta name="twitter:description" content="' + attr(description) + '">',
     '<link rel="icon" href="/favicon.svg" type="image/svg+xml">',
     '<link rel="stylesheet" href="/style.css">',
-    path === "/" ? '<link rel="preload" href="/assets/hero-desktop.webp" as="image" type="image/webp" media="(min-width:861px)" fetchpriority="high"><link rel="preload" href="/assets/hero-mobile.webp" as="image" type="image/webp" media="(max-width:860px)" fetchpriority="high">' : "",
+    path === "/" ? '<link rel="preload" href="/media/hero/anza-hero-poster.webp" as="image" type="image/webp" fetchpriority="high">' : "",
     '<script type="application/ld+json">' + JSON.stringify(jsonLd).replace(/</g, "\\u003c") + '</script>',
     '<script type="module" src="/browser.js"></script>'
   ].join("");
+  const pageNavItems = path === "/" ? [["#featured", "Work"], ["#about", "About"], ["#capabilities", "Services"], ["#contact", "Contact"]] as const : navItems;
   const header = '<a class="skip-link" href="#main">Skip to content</a><header class="site-header" id="header"><div class="shell nav-shell">' +
     '<a class="wordmark" href="/" aria-label="Anza Works home"><span class="mark" aria-hidden="true">AW</span><span>ANZA <i>WORKS</i></span></a>' +
-    '<nav class="desktop-nav" aria-label="Primary">' + navItems.map(([href, label]) => '<a href="' + href + '">' + label + '</a>').join("") + '</nav>' +
-    '<a class="header-cta" href="/contact/">Start a project <span aria-hidden="true">↗</span></a>' +
+    '<nav class="desktop-nav" aria-label="Primary">' + pageNavItems.map(([href, label]) => '<a href="' + href + '">' + label + '</a>').join("") + '</nav>' +
     '<button class="menu-button" type="button" aria-label="Open menu" aria-controls="mobile-nav" aria-expanded="false"><span></span><span></span></button></div>' +
     '<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile" inert>' +
-    navItems.map(([href, label], index) => '<a href="' + href + '"><small>0' + (index + 1) + '</small>' + label + '<span aria-hidden="true">↗</span></a>').join("") +
+    pageNavItems.map(([href, label], index) => '<a href="' + href + '"><small>0' + (index + 1) + '</small>' + label + '<span aria-hidden="true">↗</span></a>').join("") +
     '<a class="mobile-contact" href="/contact/">Start a project ↗</a></nav></header>';
+  const socialLinks = Object.entries(site.social).filter(([, url]) => url).map(([label, url]) => '<a href="' + attr(url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + ' ↗</a>').join("");
   const footer = '<footer class="footer"><div class="shell"><div class="footer-grid"><div><a href="/" class="footer-brand">ANZA<br>WORKS<span>.</span></a><p>Visual craft. Useful engineering.<br>Made to work together.</p></div>' +
     '<div><p class="eyebrow">Explore</p><a href="/work/">Work</a><a href="/services/">Services</a><a href="/about/">About</a><a href="/process/">Process</a><a href="/contact/">Contact</a></div>' +
-    '<div><p class="eyebrow">Say hello</p><a href="mailto:' + site.email + '">' + site.email + '</a><p class="footer-muted">Social links appear when official profiles are provided.</p></div></div>' +
+    '<div><p class="eyebrow">Say hello</p><a href="mailto:' + site.email + '">' + site.email + '</a>' + (socialLinks || '<p class="footer-muted">Social profiles to be added.</p>') + '</div></div>' +
     '<div class="footer-base"><span>© 2026 Anza Works</span><span>Independent digital studio</span><a href="#main">Back to top ↑</a></div></div></footer>';
   const html = '<!doctype html><html lang="en"><head>' + head + '</head><body>' +
     '<div class="scroll-progress" aria-hidden="true"></div>' + header + '<main id="main">' + body + '</main>' + footer + '</body></html>';
@@ -81,38 +81,40 @@ function projectCard(project: Project, index: number, large = false): string {
     '/">' + esc(project.title) + '</a></h3><p>' + esc(project.description) + '</p></div><a class="case-link" href="/work/' + attr(project.slug) +
     '/">View case study ↗</a></div></article>';
 }
-const endCta = '<section class="end-cta"><div class="shell"><p class="eyebrow">The next project starts here</p><h2>LET’S MAKE<br><em>IT MATTER.</em></h2><div class="cta-links">' +
+const endCta = '<section id="contact" class="end-cta"><div class="shell"><p class="eyebrow">The next project starts here</p><h2>LET’S BUILD<br>SOMETHING<br><em>WORTH REMEMBERING.</em></h2><div class="cta-links">' +
   button("/contact/", "Start a project") + button("mailto:" + site.email, "Email directly", "outline") + '</div></div></section>';
 
-const home = '<section class="hero" id="hero"><div class="hero-image" aria-hidden="true"></div><div class="hero-grid" aria-hidden="true"></div>' +
-  '<div class="shell hero-shell"><div class="hero-copy"><p class="eyebrow">Creative digital studio / Web · Software · Design</p>' +
-  '<h1>BUILT TO<br><span>STAND APART.</span></h1><p class="hero-lead">Anza Works creates distinctive websites and practical software for businesses ready to move forward.</p>' +
-  '<div class="hero-actions">' + button("/work/", "View the work") + button("/contact/", "Start a project", "outline") + '</div></div>' +
-  '<div class="hero-modes" role="group" aria-label="Explore studio disciplines"><span>EXPLORE /</span>' +
-  ['Creator', 'Developer', 'Designer', 'Builder'].map((x, i) => '<button type="button" class="mode-button' + (i === 0 ? ' selected' : '') +
-  '" data-mode="' + x.toLowerCase() + '" aria-pressed="' + (i === 0) + '">' + String(i + 1).padStart(2, "0") + ' ' + x + '</button>').join("") +
-  '</div><a class="scroll-hint" href="#statement">Scroll to explore <span aria-hidden="true">↓</span></a></div></section>' +
+function socialLinksForHero(): string {
+  return Object.entries(site.social).filter(([, url]) => url).map(([label, url]) => '<a href="' + attr(url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + '</a>').join("");
+}
+const home = '<section class="hero" id="hero"><div class="hero-ambient" aria-hidden="true"></div>' +
+  '<div class="hero-visual" aria-hidden="true"><video class="hero-video" autoplay muted playsinline preload="metadata" poster="/media/hero/anza-hero-poster.webp" disablepictureinpicture><source src="/media/hero/anza-hero.mp4" type="video/mp4"></video></div>' +
+  '<div class="hero-vignette" aria-hidden="true"></div><div class="shell hero-shell"><div class="hero-copy"><p class="eyebrow">ANZA WORKS / INDEPENDENT DIGITAL STUDIO</p>' +
+  '<h1>DIGITAL<br>EXPERIENCES<br><span>BUILT DIFFERENTLY.</span></h1><p class="hero-lead">I design and build websites, software and digital systems for businesses that want something beyond the ordinary.</p></div>' +
+  '<a class="hero-work" href="#featured">VIEW WORK <span aria-hidden="true">↗</span></a>' +
+  '<div class="hero-bottom"><div class="hero-social">' + socialLinksForHero() + '</div><span>© 2026 ANZA WORKS</span></div>' +
+  '<a class="scroll-hint" href="#featured" aria-label="Scroll to selected work">SCROLL TO EXPLORE <span aria-hidden="true">↓</span></a></div></section>' +
   '<section class="statement" id="statement"><div class="shell"><p class="eyebrow reveal">A different perspective</p><h2 class="reveal">DESIGN PEOPLE <em>NOTICE.</em><br>SYSTEMS PEOPLE <em>USE.</em></h2><p class="reveal">Both sides of the experience deserve attention.</p></div></section>' +
-  section("featured", "01", "Selected work", "IDEAS WITH<br>INTENT.", '<div class="project-grid">' +
-    projectCard(projects[0]!, 1, true) + projectCard(projects[1]!, 2) + projectCard(projects[3]!, 3) +
+  section("featured", "01", "Selected work", "SELECTED<br>WORK.", '<div class="project-grid">' +
+    projectCard(projects[0]!, 1, true) + projectCard(projects[1]!, 2, true) + projectCard(projects[3]!, 3, true) +
     '</div><div class="section-action">' + button("/work/", "Explore all work", "outline") + '</div>', "featured") +
-  section("capabilities", "02", "Services", "WHAT I HELP<br>YOU BUILD.", '<div class="service-list">' +
-    services.slice(0, 7).map((s, i) => '<a class="service-line reveal" href="/services/"><span class="service-index">' +
+  section("capabilities", "02", "Services", "WHAT I<br>BUILD.", '<div class="service-list">' +
+    services.filter((_, i) => [0, 1, 3, 5, 6, 7, 9, 10].includes(i)).map((s, i) => '<a class="service-line reveal" href="/services/"><span class="service-index">' +
       String(i + 1).padStart(2, "0") + '</span><h3>' + esc(s[0]) + '</h3><p>' + esc(s[1]) +
       '</p><span class="service-arrow" aria-hidden="true">↗</span></a>').join("") + '</div>') +
-  section("approach", "03", "Why Anza Works", "EVERY DETAIL<br>HAS A JOB.", '<div class="value-grid">' +
+  section("approach", "03", "Approach", "DESIGN.<br>CODE. SYSTEMS.", '<div class="value-grid">' +
     [["01", "Made for the brief", "Start with the business goal and the people the product needs to serve."],
      ["02", "Craft and code", "Make the visual idea and the underlying system work as one."],
      ["03", "Room to grow", "Choose clear structure that can adapt as needs change."]]
       .map(([n, t, c]) => '<article class="value-card reveal"><span>' + n + '</span><h3>' + t + '</h3><p>' + c + '</p></article>').join("") +
     '</div>', "approach") +
-  section("process", "04", "Process", "FROM QUESTION<br>TO RELEASE.", '<div class="process-track">' +
+  section("about", "04", "Studio", "ABOUT<br>ANZA WORKS.", '<div class="about-split"><div class="about-monogram" role="img" aria-label="Abstract AW visual, portrait placeholder">' +
+    '<div class="monogram-rings"></div><span>AW</span></div><div class="about-text reveal"><p>Anza Works connects visual ambition with the engineering that makes it usable. The result is work with a clear purpose and a distinct point of view.</p>' +
+    '<p>Independent by design. Focused on the details that last.</p>' + button("/about/", "About the studio", "outline") + '</div></div>') +
+  section("process", "05", "Process", "FROM QUESTION<br>TO RELEASE.", '<div class="process-track">' +
     phases.map((step, i) => '<div class="process-stop reveal"><span>' + String(i + 1).padStart(2, "0") +
     '</span><strong>' + esc(step[0]) + '</strong></div>').join("") + '</div><div class="section-action">' +
     button("/process/", "See the process", "outline") + '</div>') +
-  section("about", "05", "Studio", "ONE VISION.<br>TWO DISCIPLINES.", '<div class="about-split"><div class="about-monogram" role="img" aria-label="Abstract AW visual, portrait placeholder">' +
-    '<div class="monogram-rings"></div><span>AW</span></div><div class="about-text reveal"><p>Anza Works connects visual ambition with the engineering that makes it usable. The result is work with a clear purpose and a distinct point of view.</p>' +
-    '<p>Independent by design. Focused on the details that last.</p>' + button("/about/", "About the studio", "outline") + '</div></div>') +
   section("faq", "06", "FAQ", "GOOD QUESTIONS<br>COME FIRST.", '<div class="faq-list">' +
     faqs.map(([q, a]) => '<details class="faq-item"><summary>' + esc(q) + '<span aria-hidden="true">+</span></summary><p>' + esc(a) + '</p></details>').join("") +
     '</div>') + endCta;
@@ -223,9 +225,10 @@ writeFileSync(join(out, "sitemap.xml"),
 writeFileSync(join(out, "robots.txt"), 'User-agent: *\nAllow: /\nSitemap: ' + site.origin + '/sitemap.xml\n');
 writeFileSync(join(out, "projects.json"), JSON.stringify(projects, null, 2));
 writeFileSync(join(out, "favicon.svg"),
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#060912"/><text x="6" y="43" fill="#84e7fa" font-family="Arial,sans-serif" font-size="28" font-weight="bold">AW</text></svg>');
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#050505"/><text x="6" y="43" fill="#D71920" font-family="Arial,sans-serif" font-size="28" font-weight="bold">AW</text></svg>');
 copyFileSync(join(root, "src", "style.css"), join(out, "style.css"));
 copyFileSync(join(root, "build", "browser.js"), join(out, "browser.js"));
+cpSync(join(root, "public", "media"), join(out, "media"), { recursive: true });
 cpSync(join(root, "assets"), join(out, "assets"), { recursive: true });
 cpSync(join(root, "public", "brand"), join(out, "brand"), { recursive: true });
 console.log("Built " + sitemapPaths.length + " public routes and utility pages.");
