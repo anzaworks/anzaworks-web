@@ -1,3 +1,0 @@
-# Future deployment
-
-Do not deploy this local build as a production admin. Before production: install a maintained web stack, migrate portfolio generation to a supported build pipeline, add verified domain/contact inbox, optimize real images and videos, test Core Web Vitals, and implement authenticated private API/database access. Serve portfolio and admin on separate origins with HTTPS and appropriate headers. Configure canonical URLs, sitemap and robots for the real domain. Perform accessibility, browser, mobile, offline, security, backup recovery and payment/PDF acceptance testing. Do not publish private data or backup files.

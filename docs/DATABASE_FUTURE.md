@@ -1,3 +1,0 @@
-# Future database and sync
-
-Retain the UI/domain boundary. Introduce a repository contract and an authenticated remote implementation backed by PostgreSQL. Add server authoritative IDs, revisions, validation, and transactional writes. Migrate local records through a user initiated import with duplicate detection and rollback. Use an outbound queue for offline edits, explicit conflict review, and schema migrations. Store large approved media in object storage. Keep public content publishing separate: select and review public fields, publish through a public read-only API, and never expose the private tables or credentials in portfolio JavaScript.
