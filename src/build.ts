@@ -1,9 +1,10 @@
-import { mkdirSync, writeFileSync, copyFileSync, cpSync } from "node:fs";
+import { mkdirSync, writeFileSync, copyFileSync, cpSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { projects, services, process as phases, faqs, site, type Project } from "./content.js";
 
 const root = process.cwd();
 const out = join(root, "site");
+rmSync(out, { recursive: true, force: true });
 const esc = (value: unknown): string => String(value).replace(/[&<>"']/g, character =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character);
 const attr = esc;
@@ -27,11 +28,12 @@ function page(path: string, title: string, description: string, body: string, op
     '<meta property="og:title" content="' + attr(title + " | Anza Works") + '">',
     '<meta property="og:description" content="' + attr(description) + '">',
     '<meta property="og:url" content="' + attr(url) + '">',
-    '<meta property="og:image" content="' + site.origin + '/assets/hero-desktop.webp">',
+    '<meta property="og:image" content="' + site.origin + '/media/hero/anza-hero-poster.webp">',
     '<meta name="twitter:card" content="summary_large_image">',
     '<meta name="twitter:title" content="' + attr(title + " | Anza Works") + '">',
     '<meta name="twitter:description" content="' + attr(description) + '">',
-    '<link rel="icon" href="/favicon.svg" type="image/svg+xml">',
+    '<link rel="icon" href="/brand/anza-icon.png" type="image/png">',
+    '<link rel="apple-touch-icon" href="/brand/anza-icon.png">',
     '<link rel="stylesheet" href="/style.css">',
     path === "/" ? '<link rel="preload" href="/media/hero/anza-hero-poster.webp" as="image" type="image/webp" fetchpriority="high">' : "",
     '<script type="application/ld+json">' + JSON.stringify(jsonLd).replace(/</g, "\\u003c") + '</script>',
@@ -39,14 +41,14 @@ function page(path: string, title: string, description: string, body: string, op
   ].join("");
   const pageNavItems = path === "/" ? [["#featured", "Work"], ["#about", "About"], ["#capabilities", "Services"], ["#contact", "Contact"]] as const : navItems;
   const header = '<a class="skip-link" href="#main">Skip to content</a><header class="site-header" id="header"><div class="shell nav-shell">' +
-    '<a class="wordmark" href="/" aria-label="Anza Works home"><span class="mark" aria-hidden="true">AW</span><span>ANZA <i>WORKS</i></span></a>' +
+    '<a class="wordmark" href="/" aria-label="Anza Works home"><img class="brand-logo brand-logo-header" src="/brand/anza-logo-main.png" alt="" width="68" height="48"><span>ANZA <i>WORKS</i></span></a>' +
     '<nav class="desktop-nav" aria-label="Primary">' + pageNavItems.map(([href, label]) => '<a href="' + href + '">' + label + '</a>').join("") + '</nav>' +
-    '<button class="menu-button" type="button" aria-label="Open menu" aria-controls="mobile-nav" aria-expanded="false"><span></span><span></span></button></div>' +
+    '<button class="menu-button" type="button" aria-label="Open menu" aria-controls="mobile-nav" aria-expanded="false"><span></span><span></span></button></div></header>' +
     '<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile" inert>' +
     pageNavItems.map(([href, label], index) => '<a href="' + href + '"><small>0' + (index + 1) + '</small>' + label + '<span aria-hidden="true">↗</span></a>').join("") +
-    '<a class="mobile-contact" href="/contact/">Start a project ↗</a></nav></header>';
+    '<a class="mobile-contact" href="/contact/">Start a project ↗</a></nav>';
   const socialLinks = Object.entries(site.social).filter(([, url]) => url).map(([label, url]) => '<a href="' + attr(url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + ' ↗</a>').join("");
-  const footer = '<footer class="footer"><div class="shell"><div class="footer-grid"><div><a href="/" class="footer-brand">ANZA<br>WORKS<span>.</span></a><p>Visual craft. Useful engineering.<br>Made to work together.</p></div>' +
+  const footer = '<footer class="footer"><div class="shell"><div class="footer-grid"><div><a href="/" class="footer-brand" aria-label="Anza Works home"><img class="brand-logo brand-logo-footer" src="/brand/anza-logo-main.png" alt="" width="120" height="86"><span>ANZA WORKS</span></a><p>Visual craft. Useful engineering.<br>Made to work together.</p></div>' +
     '<div><p class="eyebrow">Explore</p><a href="/work/">Work</a><a href="/services/">Services</a><a href="/about/">About</a><a href="/process/">Process</a><a href="/contact/">Contact</a></div>' +
     '<div><p class="eyebrow">Say hello</p><a href="mailto:' + site.email + '">' + site.email + '</a>' + (socialLinks || '<p class="footer-muted">Social profiles to be added.</p>') + '</div></div>' +
     '<div class="footer-base"><span>© 2026 Anza Works</span><span>Independent digital studio</span><a href="#main">Back to top ↑</a></div></div></footer>';
@@ -224,11 +226,9 @@ writeFileSync(join(out, "sitemap.xml"),
   sitemapPaths.map(path => '<url><loc>' + site.origin + path + '</loc></url>').join("") + '</urlset>');
 writeFileSync(join(out, "robots.txt"), 'User-agent: *\nAllow: /\nSitemap: ' + site.origin + '/sitemap.xml\n');
 writeFileSync(join(out, "projects.json"), JSON.stringify(projects, null, 2));
-writeFileSync(join(out, "favicon.svg"),
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#050505"/><text x="6" y="43" fill="#D71920" font-family="Arial,sans-serif" font-size="28" font-weight="bold">AW</text></svg>');
 copyFileSync(join(root, "src", "style.css"), join(out, "style.css"));
 copyFileSync(join(root, "build", "browser.js"), join(out, "browser.js"));
+copyFileSync(join(root, "build", "dot-cursor.js"), join(out, "dot-cursor.js"));
 cpSync(join(root, "public", "media"), join(out, "media"), { recursive: true });
-cpSync(join(root, "assets"), join(out, "assets"), { recursive: true });
 cpSync(join(root, "public", "brand"), join(out, "brand"), { recursive: true });
 console.log("Built " + sitemapPaths.length + " public routes and utility pages.");

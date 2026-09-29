@@ -1,1 +1,1 @@
-Place the approved Anza Works logo files here when available: logo.png, icon.png, logo-light.png and logo-dark.png. The website currently uses a clearly typographic AW fallback, not an official replacement logo.
+The public logo and favicon are adapted from the supplied flat AW monogram. Navy is light and the blue swoosh is deep red on transparency. The glossy app-style logo is reserved for a future Admin/PWA asset and is not used here.

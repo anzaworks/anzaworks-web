@@ -3,20 +3,41 @@ const menuButton = document.querySelector<HTMLButtonElement>(".menu-button");
 const menu = document.querySelector<HTMLElement>("#mobile-nav");
 const progress = document.querySelector<HTMLElement>(".scroll-progress");
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let menuScrollY = 0;
 
-function toggleMenu(open: boolean): void {
+function toggleMenu(open: boolean, restoreFocus = true): void {
   if (!menu || !menuButton) return;
+  if (open) {
+    menuScrollY = window.scrollY;
+    document.body.style.setProperty("--menu-scroll-top", `${-menuScrollY}px`);
+  }
   menu.classList.toggle("open", open);
   menu.inert = !open;
   menuButton.setAttribute("aria-expanded", String(open));
   menuButton.setAttribute("aria-label", open ? "Close menu" : "Open menu");
   document.body.classList.toggle("menu-open", open);
   if (open) menu.querySelector<HTMLAnchorElement>("a")?.focus();
-  else menuButton.focus();
+  else {
+    document.body.style.removeProperty("--menu-scroll-top");
+    const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
+    window.scrollTo(0, menuScrollY);
+    document.documentElement.style.scrollBehavior = previousScrollBehavior;
+    if (restoreFocus) menuButton.focus();
+  }
 }
 menuButton?.addEventListener("click", () => toggleMenu(menuButton.getAttribute("aria-expanded") !== "true"));
 menu?.addEventListener("click", event => {
-  if ((event.target as Element).closest("a")) toggleMenu(false);
+  const link = (event.target as Element).closest<HTMLAnchorElement>("a");
+  if (!link) return;
+  toggleMenu(false, false);
+  if (link.hash && new URL(link.href).pathname === location.pathname) {
+    const target = document.getElementById(link.hash.slice(1));
+    requestAnimationFrame(() => {
+      target?.setAttribute("tabindex", "-1");
+      target?.focus({ preventScroll: true });
+    });
+  }
 });
 document.addEventListener("keydown", event => {
   if (!menu || !menuButton || menuButton.getAttribute("aria-expanded") !== "true") return;
@@ -25,12 +46,17 @@ document.addEventListener("keydown", event => {
     const links = [...menu.querySelectorAll<HTMLAnchorElement>("a")];
     const first = links[0];
     const last = links.at(-1);
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
-    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); menuButton.focus(); }
+    else if (event.shiftKey && document.activeElement === menuButton) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); menuButton.focus(); }
+    else if (!event.shiftKey && document.activeElement === menuButton) { event.preventDefault(); first?.focus(); }
   }
 });
 window.addEventListener("resize", () => {
-  if (window.innerWidth > 860 && menuButton?.getAttribute("aria-expanded") === "true") toggleMenu(false);
+  if (window.innerWidth > 860 && menuButton?.getAttribute("aria-expanded") === "true") {
+    toggleMenu(false, false);
+    document.querySelector<HTMLAnchorElement>(".wordmark")?.focus();
+  }
 });
 document.querySelectorAll<HTMLAnchorElement>(".desktop-nav a, .mobile-nav a").forEach(link => {
   if (link.getAttribute("href") === location.pathname) link.setAttribute("aria-current", "page");
@@ -87,23 +113,25 @@ const heroAmbient = hero?.querySelector<HTMLElement>(".hero-ambient");
 const heroVideo = hero?.querySelector<HTMLVideoElement>(".hero-video");
 if (heroVideo && reduced) heroVideo.pause();
 if (hero && !reduced) {
-  if (matchMedia("(hover:hover) and (pointer:fine)").matches) {
-    hero.addEventListener("pointermove", event => {
-      const bounds = hero.getBoundingClientRect();
-      const x = (event.clientX - bounds.left) / bounds.width - .5;
-      const y = (event.clientY - bounds.top) / bounds.height - .5;
-      heroVisual?.style.setProperty("--pointer-x", `${-x * 12}px`);
-      heroVisual?.style.setProperty("--pointer-y", `${-y * 8}px`);
-      heroAmbient?.style.setProperty("--ambient-x", `${x * 15}px`);
-      heroAmbient?.style.setProperty("--ambient-y", `${y * 10}px`);
-    }, { passive: true });
-    hero.addEventListener("pointerleave", () => {
-      heroVisual?.style.removeProperty("--pointer-x");
-      heroVisual?.style.removeProperty("--pointer-y");
-      heroAmbient?.style.removeProperty("--ambient-x");
-      heroAmbient?.style.removeProperty("--ambient-y");
-    });
-  }
+  // Hybrid Windows devices can report a coarse primary pointer despite having a mouse.
+  const desktopWidth = matchMedia("(min-width: 900px)");
+  const resetPointer = () => {
+    heroVisual?.style.removeProperty("--pointer-x");
+    heroVisual?.style.removeProperty("--pointer-y");
+    heroAmbient?.style.removeProperty("--ambient-x");
+    heroAmbient?.style.removeProperty("--ambient-y");
+  };
+  hero.addEventListener("pointermove", event => {
+    if (!desktopWidth.matches || event.pointerType !== "mouse") return;
+    const bounds = hero.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width - .5;
+    const y = (event.clientY - bounds.top) / bounds.height - .5;
+    heroVisual?.style.setProperty("--pointer-x", `${-x * 12}px`);
+    heroVisual?.style.setProperty("--pointer-y", `${-y * 8}px`);
+    heroAmbient?.style.setProperty("--ambient-x", `${x * 15}px`);
+    heroAmbient?.style.setProperty("--ambient-y", `${y * 10}px`);
+  }, { passive: true });
+  hero.addEventListener("pointerleave", resetPointer);
   let scheduled = false;
   const scrollHero = () => {
     if (scheduled) return;
@@ -119,6 +147,30 @@ if (hero && !reduced) {
   window.addEventListener("scroll", scrollHero, { passive: true });
   scrollHero();
 }
+
+// Load only on desktop with motion enabled. The native cursor stays visible
+// until an actual mouse movement activates the Canvas 2D overlay.
+const cursorWidth = matchMedia("(min-width: 900px)");
+const cursorMotion = matchMedia("(prefers-reduced-motion: reduce)");
+let dotCursor: import("./dot-cursor.js").DotCursor | null = null;
+let cursorLoading = false;
+const updateCursor = () => {
+  if (!cursorWidth.matches || cursorMotion.matches) {
+    dotCursor?.destroy();
+    dotCursor = null;
+  } else if (!dotCursor && !cursorLoading) {
+    cursorLoading = true;
+    void import("./dot-cursor.js")
+      .then(({ initDotCursor }) => {
+        if (cursorWidth.matches && !cursorMotion.matches) dotCursor = initDotCursor();
+      })
+      .catch(() => { /* Retain the native cursor if the module cannot load. */ })
+      .finally(() => { cursorLoading = false; });
+  }
+};
+cursorWidth.addEventListener("change", updateCursor);
+cursorMotion.addEventListener("change", updateCursor);
+updateCursor();
 
 document.querySelectorAll<HTMLElement>(".video-frame").forEach(frame => {
   const button = frame.querySelector<HTMLButtonElement>(".video-start");

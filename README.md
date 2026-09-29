@@ -25,15 +25,15 @@ TypeScript is checked in strict mode. The build creates static HTML for every ro
 
 Home, Work, five labeled concept case studies, Services, About, Process, Contact, and utility error pages. Content and project schema live in src/content.ts; HTML and SEO output in src/build.ts; interactions in src/browser.ts; styles in src/style.css.
 
-The concept cards use original code-based presentation art. They are not screenshots or commissioned client projects. The homepage uses the approved cinematic hero video at public/media/hero/anza-hero.mp4 and its poster frame. The previous hero concept art remains in assets/ as source history and is no longer loaded. The typographic AW header/fav icon is a temporary fallback. Place the approved AW brand assets in public/brand/ and update the markup only when they are supplied.
+The concept cards use original code-based presentation art. They are not screenshots or commissioned client projects. The homepage uses the approved cinematic hero video at public/media/hero/anza-hero.mp4 and its poster frame. The poster also supplies the social preview image. The supplied flat AW mark appears in the header and footer, with a compact version as the public favicon. The glossy app icon is reserved for future Admin/PWA use.
 
 ## Adding approved project media
 
 For a project in src/content.ts, set cover, gallery and video fields to public asset paths. For example:
 
-    video: { mp4: "/assets/project.mp4", webm: "/assets/project.webm", poster: "/assets/project.webp" }
+    video: { mp4: "/media/projects/project.mp4", webm: "/media/projects/project.webm", poster: "/media/projects/project.webp" }
 
-Place those files in assets/. Build again. The video component delays adding sources until the visitor presses Play. Do not publish unapproved imagery, invented results, fake testimonials, or unverified social links.
+Place those files in public/media/projects/. Build again. The video component delays adding sources until the visitor presses Play. Do not publish unapproved imagery, invented results, fake testimonials, or unverified social links.
 
 ## Contact and publishing
 
@@ -43,6 +43,12 @@ Nothing in this repository has been deployed.
 
 ## Hero media and profiles
 
-The 10 second, 1280×720 supplied hero clip was encoded to a muted, fast-start H.264 MP4 (under 1 MB); the source audio is omitted. The opening frame supplies an immediate WebP poster that matches the first video frame. The film runs once and holds its final frame because its end does not loop seamlessly. Add a WebM source in the hero markup if one is approved later. On reduced-motion devices the poster replaces playback. Desktop pointer movement shifts the film by at most 6 px horizontally and 4 px vertically; scroll eases the film upward and fades the editorial copy. Mobile disables pointer movement.
+The supplied hero clip is a muted H.264 MP4; the source audio is omitted. The opening frame supplies an immediate WebP poster that matches the first video frame. The film runs once and holds its final frame because its end does not loop seamlessly. Add a WebM source in the hero markup if one is approved later. On reduced-motion devices the poster replaces playback. Desktop pointer movement shifts the film by at most 6 px horizontally and 4 px vertically; scroll eases the film upward and fades the editorial copy. Mobile disables pointer movement.
 
 Verified social profile URLs may be entered in `site.social` in `src/content.ts`. Null entries do not render. Confirm `hello@anzaworks.lk` and replace the concept studies with approved client material before publishing.
+
+## Dot Cursor
+
+Desktop mouse movement activates a single fixed Canvas 2D cursor across the public site. A 12 px warm-white head (`#F1F1F1`) carries an 11-sample tapered deep-red (`#C91422`) ribbon, up to 6.8 px thick. Links and buttons transition to a 30 px hollow red ring and shorten the trail. `data-cursor="hide"` restores the native cursor over designated areas. No cursor label or automatic CTA underline is used.
+
+The native cursor is hidden only after real mouse movement and restored on exit, blur, hidden areas, or failure. The feature is disabled below 900 px and with reduced motion, without relying on fine-pointer media queries. DPR is capped at 1.75; frames stop when the head and trail settle, pause in hidden tabs, and all listeners and observers are released on teardown. The canvas does not intercept input. The mobile navigation remains a body-level fixed overlay with scroll locking and keyboard handling.
