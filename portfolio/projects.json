@@ -16,7 +16,18 @@
       "Responsive design",
       "Accessibility",
       "Content architecture"
-    ]
+    ],
+    "client": null,
+    "industry": "Hospitality website",
+    "cover": null,
+    "gallery": [],
+    "video": null,
+    "services": [],
+    "year": 2026,
+    "liveUrl": null,
+    "githubUrl": null,
+    "featured": true,
+    "status": "concept"
   },
   {
     "slug": "saffron-table",
@@ -35,7 +46,18 @@
       "Responsive design",
       "Semantic HTML",
       "Performance"
-    ]
+    ],
+    "client": null,
+    "industry": "Restaurant website",
+    "cover": null,
+    "gallery": [],
+    "video": null,
+    "services": [],
+    "year": 2026,
+    "liveUrl": null,
+    "githubUrl": null,
+    "featured": true,
+    "status": "concept"
   },
   {
     "slug": "form-and-found",
@@ -54,7 +76,18 @@
       "UI design",
       "Commerce architecture",
       "Accessibility"
-    ]
+    ],
+    "client": null,
+    "industry": "E-commerce website",
+    "cover": null,
+    "gallery": [],
+    "video": null,
+    "services": [],
+    "year": 2026,
+    "liveUrl": null,
+    "githubUrl": null,
+    "featured": true,
+    "status": "concept"
   },
   {
     "slug": "counterpoint-pos",
@@ -73,7 +106,18 @@
       "Product design",
       "Data modeling",
       "Offline planning"
-    ]
+    ],
+    "client": null,
+    "industry": "POS / admin system",
+    "cover": null,
+    "gallery": [],
+    "video": null,
+    "services": [],
+    "year": 2026,
+    "liveUrl": null,
+    "githubUrl": null,
+    "featured": false,
+    "status": "concept"
   },
   {
     "slug": "atlas-desk",
@@ -92,6 +136,17 @@
       "Web application",
       "UX systems",
       "Data architecture"
-    ]
+    ],
+    "client": null,
+    "industry": "Web application",
+    "cover": null,
+    "gallery": [],
+    "video": null,
+    "services": [],
+    "year": 2026,
+    "liveUrl": null,
+    "githubUrl": null,
+    "featured": false,
+    "status": "concept"
   }
 ]

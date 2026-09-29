@@ -1,1 +1,11 @@
-document.querySelector('#enquiry').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;if(!f.reportValidity())return;const d=new FormData(f);const lines=[...d].map(([k,v])=>`${k}: ${v||'—'}`).join('\n');const url=`mailto:hello@anzaworks.lk?subject=${encodeURIComponent('Project enquiry — '+d.get('name'))}&body=${encodeURIComponent(lines)}`;document.querySelector('#form-status').textContent='Your email app should open with a draft. Please check the destination address before sending.';location.href=url;});
+const form = document.querySelector('#enquiry');
+form?.addEventListener('submit', event => {
+  event.preventDefault();
+  if (!form.reportValidity()) return;
+  const data = new FormData(form);
+  const lines = [...data].map(([key, value]) => key + ': ' + (value || '—')).join('\n');
+  const subject = 'Project enquiry — ' + data.get('name');
+  const url = 'mailto:hello@anzaworks.lk?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines);
+  document.querySelector('#form-status').textContent = 'Your email app should open with a draft. Please confirm the address and send it there.';
+  location.href = url;
+});

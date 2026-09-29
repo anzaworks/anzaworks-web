@@ -1,1 +1,1 @@
-{"name": "Anza Works", "short_name": "Anza", "start_url": "/", "display": "standalone", "theme_color": "#080e1b", "background_color": "#080e1b", "icons": [{"src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml"}]}
+{"name": "Anza Works", "short_name": "Anza", "start_url": "/", "display": "browser", "theme_color": "#05070d", "background_color": "#05070d", "icons": [{"src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml"}]}
