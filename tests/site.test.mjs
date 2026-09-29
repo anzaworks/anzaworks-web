@@ -39,12 +39,13 @@ test('concepts are clearly labeled and future media fields exist', () => {
 });
 
 test('public boundary and utility files are present', () => {
-  for (const name of ['favicon.svg', 'robots.txt', 'sitemap.xml', '404.html', 'error.html', 'style.css', 'browser.js', 'assets/hero-desktop.webp', 'assets/hero-mobile.webp']) {
+  for (const name of ['favicon.svg', 'robots.txt', 'sitemap.xml', '404.html', 'error.html', 'style.css', 'browser.js']) {
     assert.ok(existsSync(join(root, name)), name);
   }
   assert.match(readFileSync(join(root, 'contact/index.html'), 'utf8'), /mailto:hello@anzaworks.lk/);
   assert.match(readFileSync(join(root, '404.html'), 'utf8'), /name="robots" content="noindex"/);
   assert.ok(readdirSync(join(root)).every(name => name !== 'admin'));
+  assert.ok(!existsSync(join(root, 'assets')));
 });
 
 test('approved hero media is local, lightweight and accessible from the homepage', () => {
@@ -54,6 +55,7 @@ test('approved hero media is local, lightweight and accessible from the homepage
   const poster = join(root, 'media/hero/anza-hero-poster.webp');
   assert.ok(existsSync(mp4));
   assert.ok(existsSync(poster));
+  assert.match(html, /property="og:image" content="https:\/\/anzaworks\.lk\/media\/hero\/anza-hero-poster\.webp"/);
   assert.ok(statSync(mp4).size < 1_500_000);
   assert.match(html, /<video class="hero-video" autoplay muted playsinline[^>]*poster="\/media\/hero\/anza-hero-poster.webp"/);
   assert.match(html, /<source src="\/media\/hero\/anza-hero.mp4" type="video\/mp4">/);

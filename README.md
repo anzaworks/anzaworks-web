@@ -25,15 +25,15 @@ TypeScript is checked in strict mode. The build creates static HTML for every ro
 
 Home, Work, five labeled concept case studies, Services, About, Process, Contact, and utility error pages. Content and project schema live in src/content.ts; HTML and SEO output in src/build.ts; interactions in src/browser.ts; styles in src/style.css.
 
-The concept cards use original code-based presentation art. They are not screenshots or commissioned client projects. The homepage uses the approved cinematic hero video at public/media/hero/anza-hero.mp4 and its poster frame. The previous hero concept art remains in assets/ as source history and is no longer loaded. The typographic AW header/fav icon is a temporary fallback. Place the approved AW brand assets in public/brand/ and update the markup only when they are supplied.
+The concept cards use original code-based presentation art. They are not screenshots or commissioned client projects. The homepage uses the approved cinematic hero video at public/media/hero/anza-hero.mp4 and its poster frame. The poster also supplies the social preview image. The typographic AW header/fav icon is a temporary fallback. Place the approved AW brand assets in public/brand/ and update the markup only when they are supplied.
 
 ## Adding approved project media
 
 For a project in src/content.ts, set cover, gallery and video fields to public asset paths. For example:
 
-    video: { mp4: "/assets/project.mp4", webm: "/assets/project.webm", poster: "/assets/project.webp" }
+    video: { mp4: "/media/projects/project.mp4", webm: "/media/projects/project.webm", poster: "/media/projects/project.webp" }
 
-Place those files in assets/. Build again. The video component delays adding sources until the visitor presses Play. Do not publish unapproved imagery, invented results, fake testimonials, or unverified social links.
+Place those files in public/media/projects/. Build again. The video component delays adding sources until the visitor presses Play. Do not publish unapproved imagery, invented results, fake testimonials, or unverified social links.
 
 ## Contact and publishing
 

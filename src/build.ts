@@ -27,7 +27,7 @@ function page(path: string, title: string, description: string, body: string, op
     '<meta property="og:title" content="' + attr(title + " | Anza Works") + '">',
     '<meta property="og:description" content="' + attr(description) + '">',
     '<meta property="og:url" content="' + attr(url) + '">',
-    '<meta property="og:image" content="' + site.origin + '/assets/hero-desktop.webp">',
+    '<meta property="og:image" content="' + site.origin + '/media/hero/anza-hero-poster.webp">',
     '<meta name="twitter:card" content="summary_large_image">',
     '<meta name="twitter:title" content="' + attr(title + " | Anza Works") + '">',
     '<meta name="twitter:description" content="' + attr(description) + '">',
@@ -229,6 +229,5 @@ writeFileSync(join(out, "favicon.svg"),
 copyFileSync(join(root, "src", "style.css"), join(out, "style.css"));
 copyFileSync(join(root, "build", "browser.js"), join(out, "browser.js"));
 cpSync(join(root, "public", "media"), join(out, "media"), { recursive: true });
-cpSync(join(root, "assets"), join(out, "assets"), { recursive: true });
 cpSync(join(root, "public", "brand"), join(out, "brand"), { recursive: true });
 console.log("Built " + sitemapPaths.length + " public routes and utility pages.");
