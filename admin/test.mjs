@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {totals,balance,convertQuote,reminderEvents,expiryCategory,profit,leadToClient,serializeBackup,validateBackup,tables} from './src/domain.mjs';
+const invoice={id:'i',lineItems:[{description:'Build',quantity:2,rate:100}],discount:20,tax:10,status:'Sent',dueDate:'2099-01-01'};
+assert.deepEqual(totals(invoice),{subtotal:200,discount:20,tax:18,total:198});
+assert.equal(balance(invoice,[{invoiceId:'i',amount:50}]).balance,148);
+assert.equal(balance(invoice,[{invoiceId:'i',amount:198}]).status,'Paid');
+assert.equal(convertQuote({...invoice,status:'Accepted',lineItems:invoice.lineItems},'ANZA-2026-0001').number,'ANZA-2026-0001');
+assert.throws(()=>convertQuote({...invoice,status:'Draft'},'x'));
+assert.equal(expiryCategory('2026-10-01',new Date('2026-09-29T12:00:00Z')),'Due within 7 days');
+assert.equal(reminderEvents({id:'r',expiryDate:'2026-10-01'},new Date('2026-09-29T12:00:00Z')).length,3);
+assert.deepEqual(profit({id:'p',currency:'LKR'},[{projectId:'p',currency:'LKR',amount:100}],[{projectId:'p',currency:'LKR',amount:35}]),{currency:'LKR',revenue:100,cost:35,estimatedProfit:65});
+assert.equal(leadToClient({id:'l',name:'A'}).sourceLeadId,'l');
+const records=Object.fromEntries(tables.map(t=>[t,[]]));records.clients=[{id:'c',clientName:'Test'}];
+assert.equal(validateBackup(JSON.parse(serializeBackup(records))).records.clients[0].id,'c');
+assert.throws(()=>validateBackup({}));
+console.log('Domain tests passed');

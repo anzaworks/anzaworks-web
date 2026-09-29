@@ -1,0 +1,16 @@
+{
+  "name": "anza-works",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "build": "python3 portfolio/build.py && node --check admin/src/app.mjs && node --check admin/src/domain.mjs && node --check admin/src/repository.mjs && node --check admin/src/pdf.mjs && node --check admin/src/backup.mjs",
+    "lint": "node --check admin/src/app.mjs && node --check admin/src/domain.mjs && node --check admin/src/repository.mjs && node --check admin/src/pdf.mjs && node --check admin/src/backup.mjs && node --check portfolio/contact.js && python3 -m py_compile portfolio/build.py",
+    "dev:portfolio": "python3 -m http.server 3000 --directory portfolio",
+    "dev:admin": "python3 -m http.server 3001 --directory admin",
+    "typecheck": "npm run build"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.5"
+  }
+}
