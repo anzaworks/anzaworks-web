@@ -199,3 +199,12 @@ form?.addEventListener("submit", event => {
   if (status) status.textContent = "Your email app should open a draft. Check the address and send it there.";
   location.href = url;
 });
+
+// Selected Work stays a native, swipeable list if enhancement cannot load.
+const workSliderRoot = document.querySelector<HTMLElement>("[data-work-slider]");
+if (workSliderRoot) {
+  void import("./smooth-work-slider.js").then(({ initSmoothWorkSlider }) => {
+    const slider = initSmoothWorkSlider(workSliderRoot);
+    window.addEventListener("pagehide", event => { if (!event.persisted) slider.destroy(); }, { once: true });
+  }).catch(() => { /* Keep the native scroll-snap list and project links. */ });
+}
