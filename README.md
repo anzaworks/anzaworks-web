@@ -43,7 +43,7 @@ The approved hero film, AW logos, Dot Cursor implementation and body-level mobil
 
 ## Contact and publishing
 
-The form validates locally and opens a draft in the visitor's email app. No enquiry is stored or sent to a server. The verified public contacts are Ansafbisthamy@gmail.com and +94 76 618 3838 (tel:+94766183838). WhatsApp is also approved at https://wa.me/94766183838; its button appears only on Contact and as a compact footer link. Both open safely in a new tab. The form reads its recipient from its mailto action; name, email, project type and a message of at least 15 characters are required. Canonicals, sitemap and social metadata use the future domain https://anzaworks.lk; edit the central site configuration in src/content.ts if it changes.
+The form validates locally and opens a draft in the visitor's email app. No enquiry is stored or sent to a server. The verified public contacts are Ansafbisthamy@gmail.com and +94 76 618 3838 (tel:+94766183838). WhatsApp is also approved at https://wa.me/94766183838; its button appears only on Contact and as a compact footer link. Both open safely in a new tab. The form reads its recipient from its mailto action; name, email, project type and a message of at least 15 characters are required. Canonicals, sitemap and social metadata temporarily use https://anzaworks-web.vercel.app. Once the custom domain is connected, change only `site.origin` in `src/content.ts` back to https://anzaworks.lk.
 
 Nothing in this repository has been deployed.
 
@@ -68,3 +68,10 @@ Archive cards now use their own stacked `.work-card-body`: image, number/categor
 Screenshot frames use 16:10 with cover/top-center placement. Prism Jury's former 1280×476 capture was too shallow for that frame; it is now a focused 762×476 crop of the actual public hero. Dispute Dock was recaptured and framed at 960×600, excluding the example payout and demo agreement data. The other five captures use their existing local assets with the corrected cover fit. Hero media is untouched.
 
 The Home Selected Work slider is the final project slider. Its design, motion, project order, wheel/drag behavior and mobile swipe fallback are preserved.
+
+
+## Social sharing
+
+Normal pages use `/brand/anza-social-preview.png`: a dedicated 1200×630 PNG with the existing AW mark, ANZA WORKS wordmark and Creative Digital Studio subtitle on #050505 with #C91422 accents. The logo asset is composed without redesign. Open Graph and Twitter images use absolute URLs from `site.origin`, with image alt text and appropriate MIME type/dimensions. Project case studies retain their real local WebP screenshots and corresponding dimensions/alt text. Favicon and Apple touch icon remain `/brand/anza-icon.png`.
+
+The pushed source and live metadata were inspected before this change. The live page pointed social image/canonical URLs to the future custom domain and omitted Twitter image metadata. This source fix has not been deployed; sharing previews can be cached by platforms and are only eligible to update after these files are published.

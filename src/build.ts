@@ -12,8 +12,13 @@ const navItems = [["/", "Home"], ["/work/", "Work"], ["/services/", "Services"],
 
 const whatsappLink = (footer = false): string => '<a class="' + (footer ? 'whatsapp-link whatsapp-footer' : 'button button-outline whatsapp-link') + '" href="' + attr(site.whatsapp) + '" target="_blank" rel="noopener noreferrer" aria-label="Chat with Anza Works on WhatsApp"><img class="whatsapp-icon" src="/brand/whatsapp.svg" alt="" aria-hidden="true" width="20" height="20"><span>' + (footer ? 'WhatsApp' : 'Chat on WhatsApp') + '</span></a>';
 
-function page(path: string, title: string, description: string, body: string, options: { noindex?: boolean; type?: string; image?: string } = {}): void {
+function page(path: string, title: string, description: string, body: string, options: { noindex?: boolean; type?: string; image?: { path: string; width: number; height: number; type: string; alt: string } } = {}): void {
   const url = site.origin + path;
+  const image = options.image ?? {
+    path: "/brand/anza-social-preview.png", width: 1200, height: 630,
+    type: "image/png", alt: "Anza Works — Creative Digital Studio"
+  };
+  const imageUrl = new URL(image.path, site.origin).href;
   const jsonLd = options.type === "case"
     ? { "@context": "https://schema.org", "@type": "CreativeWork", name: title, description, creator: { "@type": "Organization", name: site.name }, url }
     : { "@context": "https://schema.org", "@type": "Organization", name: site.name, url: site.origin, description: site.description };
@@ -30,8 +35,15 @@ function page(path: string, title: string, description: string, body: string, op
     '<meta property="og:title" content="' + attr(title + " | Anza Works") + '">',
     '<meta property="og:description" content="' + attr(description) + '">',
     '<meta property="og:url" content="' + attr(url) + '">',
-    '<meta property="og:image" content="' + site.origin + attr(options.image ?? '/media/hero/anza-hero-poster.webp') + '">',
+    '<meta property="og:image" content="' + attr(imageUrl) + '">',
+    '<meta property="og:image:secure_url" content="' + attr(imageUrl) + '">',
+    '<meta property="og:image:type" content="' + attr(image.type) + '">',
+    '<meta property="og:image:width" content="' + image.width + '">',
+    '<meta property="og:image:height" content="' + image.height + '">',
+    '<meta property="og:image:alt" content="' + attr(image.alt) + '">',
     '<meta name="twitter:card" content="summary_large_image">',
+    '<meta name="twitter:image" content="' + attr(imageUrl) + '">',
+    '<meta name="twitter:image:alt" content="' + attr(image.alt) + '">',
     '<meta name="twitter:title" content="' + attr(title + " | Anza Works") + '">',
     '<meta name="twitter:description" content="' + attr(description) + '">',
     '<link rel="icon" href="/brand/anza-icon.png" type="image/png">',
@@ -117,7 +129,7 @@ projects.forEach((project, index) => {
   const features = section("features", "02", "Visible functionality", "A CLOSER LOOK.", '<div class="feature-rows">' + project.features.map((feature, i) => '<div class="feature-row"><span>0' + (i + 1) + '</span><h3>' + esc(feature) + '</h3></div>').join("") + '</div>');
   const gallery = project.gallery.length ? section("gallery", "03", "Visual gallery", "MORE OF<br>THE EXPERIENCE.", '<div class="project-gallery">' + project.gallery.map(image => '<figure><img loading="lazy" decoding="async" src="' + attr(image.src) + '" alt="' + attr(image.alt) + '" width="1280" height="880"><figcaption>' + esc(image.alt) + '</figcaption></figure>').join("") + '</div>') : '';
   const nextBlock = '<section class="next-work"><div class="shell"><p class="eyebrow">Next public project</p><a href="/work/' + attr(next.slug) + '/">' + esc(next.title) + '<span aria-hidden="true">↗</span></a></div></section>';
-  page("/work/" + project.slug + "/", project.title, project.summary, hero + overview + features + gallery + '<div class="shell project-live-action">' + liveLink(project) + '</div>' + nextBlock, { type: "case", image: project.cover });
+  page("/work/" + project.slug + "/", project.title, project.summary, hero + overview + features + gallery + '<div class="shell project-live-action">' + liveLink(project) + '</div>' + nextBlock, { type: "case", image: { path: project.cover, width: project.coverWidth, height: project.coverHeight, type: "image/webp", alt: project.coverAlt } });
 });
 
 const servicesPage = pageHero("Services / 02", "WHAT I<br>BUILD.", "Websites, custom applications and internal tools, shaped around how people actually use them.") +

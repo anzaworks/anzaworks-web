@@ -1,6 +1,7 @@
 export const site = {
   name: "Anza Works",
-  origin: "https://anzaworks.lk",
+  // Temporary public origin: change back only once the custom domain is connected.
+  origin: "https://anzaworks-web.vercel.app",
   email: "Ansafbisthamy@gmail.com",
   phone: "+94 76 618 3838",
   phoneHref: "tel:+94766183838",

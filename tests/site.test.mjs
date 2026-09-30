@@ -15,11 +15,11 @@ test('every public route has content, metadata and resolvable local links', () =
     const html = readFileSync(htmlPath(path), 'utf8');
     assert.match(html, /<main id="main">/);
     assert.equal((html.match(/<h1\b/g) ?? []).length, 1, path);
-    assert.match(html, new RegExp('<link rel="canonical" href="https://anzaworks.lk' + path.replaceAll('/', '\\/') + '"'));
+    assert.match(html, new RegExp('<link rel="canonical" href="https://anzaworks-web.vercel.app' + path.replaceAll('/', '\\/') + '"'));
     assert.match(html, /property="og:image"/);
     assert.doesNotMatch(html, /IndexedDB|\/admin\/|invoice records|customer records/i);
     for (const [, url] of html.matchAll(/(?:href|src)="(\/[^"]+)"/g)) {
-      const pathname = new URL(url, 'https://anzaworks.lk').pathname;
+      const pathname = new URL(url, 'https://anzaworks-web.vercel.app').pathname;
       const target = pathname.endsWith('/') ? pathname + 'index.html' : pathname;
       assert.ok(existsSync(join(root, target.slice(1))), path + ' has a broken asset or link: ' + url);
     }
@@ -102,8 +102,8 @@ test('approved hero media is local and accessible from the homepage', () => {
   const poster = join(root, 'media/hero/anza-hero-poster.webp');
   assert.ok(existsSync(mp4));
   assert.ok(existsSync(poster));
-  assert.equal(statSync(mp4).size, 3141949);
-  assert.equal(createHash('sha256').update(readFileSync(mp4)).digest('hex'), 'e98340394a1b02692debe4d20f600f5eefee61c4e35a3d1f20e170972ac7537f');
+  assert.equal(statSync(mp4).size, 3735698);
+  assert.equal(createHash('sha256').update(readFileSync(mp4)).digest('hex'), '0910446ece16e7539322be2911345c0fb1b06588a8ba1ef4c702a4266084a839');
   assert.match(html, /<video class="hero-video" autoplay muted playsinline[^>]*poster="\/media\/hero\/anza-hero-poster.webp"/);
   assert.match(html, /<source src="\/media\/hero\/anza-hero.mp4" type="video\/mp4">/);
   assert.match(css, /prefers-reduced-motion:reduce/);
