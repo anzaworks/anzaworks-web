@@ -130,3 +130,9 @@ html.dot-cursor-active,html.dot-cursor-active *{cursor:none!important}
 .work-card-actions .case-link{display:inline-flex;align-items:center;white-space:nowrap;font-size:.78rem;line-height:1.5;padding:6px 0}
 @media(max-width:1023px){.real-project-grid{grid-template-columns:minmax(0,1fr);gap:40px}.work-card-description{max-width:55ch}.work-card-body h3{font-size:clamp(1.8rem,4vw,2.5rem)}}
 @media(max-width:600px){.work-card-body{gap:14px;padding:20px 0 24px}.work-card-description{max-width:100%;font-size:1rem}.work-card-actions{gap:10px 20px}}
+
+/* Verified public contact details: readable links within the existing layout. */
+.contact-details{display:grid;gap:18px;margin:28px 0 0;min-width:0}.contact-details dt{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#999}.contact-details dd{margin:0;min-width:0}.contact-details .mail-link{display:block;min-height:44px;padding:10px 0;margin:0;max-width:100%;font-size:clamp(1rem,1.8vw,1.35rem);line-height:1.5;overflow-wrap:anywhere}.footer-grid>div{min-width:0}.footer-grid .footer-contact-link{display:block;min-height:44px;padding:10px 0;margin:0;line-height:1.5;overflow-wrap:anywhere}.contact-details a:focus-visible,.footer-contact-link:focus-visible{outline:2px solid #C91422;outline-offset:4px}
+
+/* Approved WhatsApp contact: limited to Contact and the compact footer contact list. */
+.contact-whatsapp{margin:24px 0 0}.whatsapp-link{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;max-width:100%;white-space:normal}.whatsapp-icon{display:block;flex:none;width:20px;height:20px}.whatsapp-link span{min-width:0;overflow-wrap:anywhere}.footer-grid .whatsapp-footer{display:inline-flex;justify-content:flex-start;min-height:44px;padding:10px 0;margin:0;line-height:1.5}.whatsapp-link:focus-visible{outline:2px solid #C91422;outline-offset:4px}

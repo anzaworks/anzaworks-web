@@ -1,3 +1,5 @@
+import { initEmailDraft } from "./email-draft.js";
+
 const header = document.querySelector<HTMLElement>("#header");
 const menuButton = document.querySelector<HTMLButtonElement>(".menu-button");
 const menu = document.querySelector<HTMLElement>("#mobile-nav");
@@ -188,17 +190,10 @@ document.querySelectorAll<HTMLElement>(".video-frame").forEach(frame => {
 });
 
 const form = document.querySelector<HTMLFormElement>("#enquiry");
-form?.addEventListener("submit", event => {
-  event.preventDefault();
-  if (!form.reportValidity()) return;
-  const data = new FormData(form);
-  const body = [...data].map(([key, value]) => key + ": " + (String(value).trim() || "—")).join("\n");
-  const subject = "Anza Works project enquiry — " + String(data.get("Name") ?? "New project");
-  const url = "mailto:hello@anzaworks.lk?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-  const status = document.querySelector<HTMLElement>("#form-status");
-  if (status) status.textContent = "Your email app should open a draft. Check the address and send it there.";
-  location.href = url;
-});
+if (form) {
+  const draft = initEmailDraft(form, document.querySelector<HTMLElement>("#form-status"));
+  window.addEventListener("pagehide", event => { if (!event.persisted) draft.destroy(); }, { once: true });
+}
 
 // Selected Work stays a native, swipeable list if enhancement cannot load.
 const workSliderRoot = document.querySelector<HTMLElement>("[data-work-slider]");

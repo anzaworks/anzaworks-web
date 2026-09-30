@@ -1,7 +1,10 @@
 export const site = {
   name: "Anza Works",
   origin: "https://anzaworks.lk",
-  email: "hello@anzaworks.lk",
+  email: "Ansafbisthamy@gmail.com",
+  phone: "+94 76 618 3838",
+  phoneHref: "tel:+94766183838",
+  whatsapp: "https://wa.me/94766183838",
   social: { GitHub: null, Instagram: null, LinkedIn: null, WhatsApp: null } as Record<string, string | null>,
   description: "Anza Works designs and builds distinctive websites, software and digital systems for ambitious businesses."
 } as const;

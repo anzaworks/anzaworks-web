@@ -43,7 +43,7 @@ The approved hero film, AW logos, Dot Cursor implementation and body-level mobil
 
 ## Contact and publishing
 
-The form validates locally and opens a draft in the visitor's email app. No enquiry is stored or sent to a server. Confirm that hello@anzaworks.lk is the correct destination before publishing. Canonicals, sitemap and social metadata use the future domain https://anzaworks.lk; edit the central site configuration in src/content.ts if it changes.
+The form validates locally and opens a draft in the visitor's email app. No enquiry is stored or sent to a server. The verified public contacts are Ansafbisthamy@gmail.com and +94 76 618 3838 (tel:+94766183838). WhatsApp is also approved at https://wa.me/94766183838; its button appears only on Contact and as a compact footer link. Both open safely in a new tab. The form reads its recipient from its mailto action; name, email, project type and a message of at least 15 characters are required. Canonicals, sitemap and social metadata use the future domain https://anzaworks.lk; edit the central site configuration in src/content.ts if it changes.
 
 Nothing in this repository has been deployed.
 
@@ -51,7 +51,7 @@ Nothing in this repository has been deployed.
 
 The supplied hero clip is a muted H.264 MP4; the source audio is omitted. The opening frame supplies an immediate WebP poster that matches the first video frame. The film runs once and holds its final frame because its end does not loop seamlessly. Add a WebM source in the hero markup if one is approved later. On reduced-motion devices the poster replaces playback. Desktop pointer movement shifts the film by at most 6 px horizontally and 4 px vertically; scroll eases the film upward and fades the editorial copy. Mobile disables pointer movement.
 
-Verified social profile URLs may be entered in `site.social` in `src/content.ts`. Null entries do not render. Confirm `hello@anzaworks.lk` before publishing.
+Verified social profile URLs may be entered in `site.social` in `src/content.ts`. Null entries do not render.
 
 ## Dot Cursor
 

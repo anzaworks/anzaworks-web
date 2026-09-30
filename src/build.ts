@@ -10,6 +10,8 @@ const esc = (value: unknown): string => String(value).replace(/[&<>"']/g, charac
 const attr = esc;
 const navItems = [["/", "Home"], ["/work/", "Work"], ["/services/", "Services"], ["/about/", "About"], ["/contact/", "Contact"]] as const;
 
+const whatsappLink = (footer = false): string => '<a class="' + (footer ? 'whatsapp-link whatsapp-footer' : 'button button-outline whatsapp-link') + '" href="' + attr(site.whatsapp) + '" target="_blank" rel="noopener noreferrer" aria-label="Chat with Anza Works on WhatsApp"><img class="whatsapp-icon" src="/brand/whatsapp.svg" alt="" aria-hidden="true" width="20" height="20"><span>' + (footer ? 'WhatsApp' : 'Chat on WhatsApp') + '</span></a>';
+
 function page(path: string, title: string, description: string, body: string, options: { noindex?: boolean; type?: string; image?: string } = {}): void {
   const url = site.origin + path;
   const jsonLd = options.type === "case"
@@ -50,7 +52,7 @@ function page(path: string, title: string, description: string, body: string, op
   const socialLinks = Object.entries(site.social).filter(([, url]) => url).map(([label, url]) => '<a href="' + attr(url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + ' ↗</a>').join("");
   const footer = '<footer class="footer"><div class="shell"><div class="footer-grid"><div><a href="/" class="footer-brand" aria-label="Anza Works home"><img class="brand-logo brand-logo-footer" src="/brand/anza-logo-main.png" alt="" width="120" height="86"><span>ANZA WORKS</span></a><p>Visual craft. Useful engineering.<br>Made to work together.</p></div>' +
     '<div><p class="eyebrow">Explore</p><a href="/work/">Work</a><a href="/services/">Services</a><a href="/about/">About</a><a href="/contact/">Contact</a></div>' +
-    '<div><p class="eyebrow">Say hello</p><a href="mailto:' + site.email + '">' + site.email + '</a>' + socialLinks + '</div></div>' +
+    '<div><p class="eyebrow">Say hello</p><a class="footer-contact-link" href="mailto:' + site.email + '">' + site.email + '</a><a class="footer-contact-link" href="' + site.phoneHref + '">' + site.phone + '</a>' + whatsappLink(true) + socialLinks + '</div></div>' +
     '<div class="footer-base"><span>© 2026 Anza Works</span><span>Independent digital studio</span><a href="#main">Back to top ↑</a></div></div></footer>';
   const html = '<!doctype html><html lang="en"><head>' + head + '</head><body>' +
     '<div class="scroll-progress" aria-hidden="true"></div>' + header + '<main id="main">' + body + '</main>' + footer + '</body></html>';
@@ -133,19 +135,19 @@ page("/about/", "About", "Meet Anza Works: an independent design and development
 page("/process/", "Process", "The Anza Works process now lives alongside our services.", pageHero("Process", "THE WAY<br>WE WORK.", "Understand the task, design and build, then review and hand over. The full approach is now part of Services.") + '<div class="shell utility-action">' + button("/services/#process", "Explore services & process") + '</div>', { noindex: true });
 
 const contactPage = pageHero("Contact / 05", "HAVE A PROJECT IN MIND?<br>LET’S BUILD IT.", "Share what you are planning. This form opens an email draft; nothing is stored on the site.") +
-  '<section class="section contact-section"><div class="shell contact-grid"><div><p class="eyebrow">Project enquiry</p><h2>TELL ME<br>THE SHAPE<br>OF IT.</h2><p>What are you building, and where do you need help?</p><a class="mail-link" href="mailto:' +
-    site.email + '">' + site.email + ' ↗</a></div>' +
+  '<section class="section contact-section"><div class="shell contact-grid"><div><p class="eyebrow">Project enquiry</p><h2>TELL ME<br>THE SHAPE<br>OF IT.</h2><p>What are you building, and where do you need help?</p><dl class="contact-details"><div><dt>Email</dt><dd><a class="mail-link" href="mailto:' +
+    site.email + '">' + site.email + ' ↗</a></dd></div><div><dt>Phone</dt><dd><a class="mail-link" href="' + site.phoneHref + '">' + site.phone + ' ↗</a></dd></div></dl><p class="contact-whatsapp">' + whatsappLink() + '</p></div>' +
   '<form class="contact-form" id="enquiry" action="mailto:' + site.email + '" method="post" enctype="text/plain">' +
   '<div class="field"><label for="name">Name <b>*</b></label><input id="name" name="Name" required maxlength="100" autocomplete="name"></div>' +
   '<div class="field"><label for="business">Business name</label><input id="business" name="Business name" maxlength="120" autocomplete="organization"></div>' +
-  '<div class="field"><label for="email">Email <b>*</b></label><input id="email" name="Email" type="email" required autocomplete="email"></div>' +
-  '<div class="field"><label for="phone">Phone / WhatsApp</label><input id="phone" name="Phone or WhatsApp" type="tel" autocomplete="tel"></div>' +
+  '<div class="field"><label for="email">Email <b>*</b></label><input id="email" name="Email" type="email" required maxlength="254" autocomplete="email"></div>' +
+  '<div class="field"><label for="phone">Phone</label><input id="phone" name="Phone" type="tel" maxlength="40" autocomplete="tel"></div>' +
   '<div class="field"><label for="project-type">Project type <b>*</b></label><select id="project-type" name="Project type" required><option value="">Select a type</option><option>Website</option><option>Online shop</option><option>Software / app</option><option>Other</option></select></div>' +
   '<div class="field"><label for="budget">Budget range</label><select id="budget" name="Budget range"><option value="">Prefer to discuss</option><option>Under LKR 250,000</option><option>LKR 250,000–500,000</option><option>LKR 500,000–1,000,000</option><option>Over LKR 1,000,000</option></select></div>' +
   '<div class="field"><label for="target-date">Target date</label><input id="target-date" name="Target date" type="date"></div>' +
   '<div class="field full"><label for="message">Project message <b>*</b></label><textarea id="message" name="Message" required minlength="15" maxlength="3000" placeholder="What would you like to build?"></textarea></div>' +
   '<div class="field full">' + '<button type="submit" class="button button-primary"><span>Open email draft</span><span aria-hidden="true">↗</span></button>' +
-  '<p id="form-status" role="status" aria-live="polite">Your email app will handle sending.</p></div></form></div></section>';
+  '<p id="form-status" role="status" aria-live="polite">Your email app will handle sending. Nothing is submitted to this site.</p></div></form></div></section>';
 page("/contact/", "Contact", "Have a project in mind? Discuss a website, application or business system with Anza Works.", contactPage);
 
 page("/404/", "Page not found", "The requested page could not be found.",
@@ -166,6 +168,7 @@ writeFileSync(join(out, "robots.txt"), 'User-agent: *\nAllow: /\nSitemap: ' + si
 writeFileSync(join(out, "projects.json"), JSON.stringify(projects, null, 2));
 copyFileSync(join(root, "src", "style.css"), join(out, "style.css"));
 copyFileSync(join(root, "build", "browser.js"), join(out, "browser.js"));
+copyFileSync(join(root, "build", "email-draft.js"), join(out, "email-draft.js"));
 copyFileSync(join(root, "build", "dot-cursor.js"), join(out, "dot-cursor.js"));
 copyFileSync(join(root, "build", "smooth-work-slider.js"), join(out, "smooth-work-slider.js"));
 writeFileSync(join(out, "private-systems.json"), JSON.stringify(privateSystems, null, 2));

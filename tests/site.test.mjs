@@ -88,7 +88,7 @@ test('public boundary and utility files are present', () => {
   for (const name of ['robots.txt', 'sitemap.xml', '404.html', 'error.html', 'style.css', 'browser.js', 'dot-cursor.js', 'brand/anza-logo-main.png', 'brand/anza-icon.png']) {
     assert.ok(existsSync(join(root, name)), name);
   }
-  assert.match(readFileSync(join(root, 'contact/index.html'), 'utf8'), /mailto:hello@anzaworks.lk/);
+  assert.match(readFileSync(join(root, 'contact/index.html'), 'utf8'), /mailto:Ansafbisthamy@gmail\.com/);
   assert.match(readFileSync(join(root, '404.html'), 'utf8'), /name="robots" content="noindex"/);
   assert.ok(readdirSync(join(root)).every(name => name !== 'admin'));
   assert.ok(!existsSync(join(root, 'assets')));
