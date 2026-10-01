@@ -84,3 +84,21 @@ test('approved WhatsApp links use the local recognizable icon, safe new tabs and
  const css=readFileSync('site/style.css','utf8');
  assert.match(css,/\.whatsapp-link\{[^}]*min-height:48px;max-width:100%/);
 });
+
+
+test('Contact has exactly the approved budgets, defaults to discussion and includes each choice in drafts',()=>{
+ const html=readFileSync('site/contact/index.html','utf8');
+ const select=html.match(/<select id="budget" name="Budget range">([\s\S]*?)<\/select>/)[1];
+ const options=[...select.matchAll(/<option([^>]*)>([^<]*)<\/option>/g)];
+ const expected=['Prefer to discuss','Under LKR 60,000','LKR 60,000–100,000','Over LKR 100,000'];
+ assert.deepEqual(options.map(option=>option[2]),expected);
+ assert.match(options[0][1],/selected/);
+ assert.equal(options.filter(option=>/selected/.test(option[1])).length,1);
+ for(const option of options){
+  // Without a value attribute, the native select submits the exact option text.
+  assert.doesNotMatch(option[1],/value=/);
+  const data=new FormData();data.append('Name','Client');data.append('Budget range',option[2]);
+  const params=new URLSearchParams(emailDraftUrl(recipient,data).split('?')[1]);
+  assert.equal(params.get('body'),'Name: Client\nBudget range: '+option[2]);
+ }
+});

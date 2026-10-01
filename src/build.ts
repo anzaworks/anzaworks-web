@@ -164,7 +164,7 @@ const contactPage = pageHero("Contact / 05", "HAVE A PROJECT IN MIND?<br>LET’S
   '<div class="field"><label for="email">Email <b>*</b></label><input id="email" name="Email" type="email" required maxlength="254" autocomplete="email"></div>' +
   '<div class="field"><label for="phone">Phone</label><input id="phone" name="Phone" type="tel" maxlength="40" autocomplete="tel"></div>' +
   '<div class="field"><label for="project-type">Project type <b>*</b></label><select id="project-type" name="Project type" required><option value="">Select a type</option><option>Website</option><option>Online shop</option><option>Software / app</option><option>Other</option></select></div>' +
-  '<div class="field"><label for="budget">Budget range</label><select id="budget" name="Budget range"><option value="">Prefer to discuss</option><option>Under LKR 250,000</option><option>LKR 250,000–500,000</option><option>LKR 500,000–1,000,000</option><option>Over LKR 1,000,000</option></select></div>' +
+  '<div class="field"><label for="budget">Budget range</label><select id="budget" name="Budget range"><option selected>Prefer to discuss</option><option>Under LKR 60,000</option><option>LKR 60,000–100,000</option><option>Over LKR 100,000</option></select></div>' +
   '<div class="field"><label for="target-date">Target date</label><input id="target-date" name="Target date" type="date"></div>' +
   '<div class="field full"><label for="message">Project message <b>*</b></label><textarea id="message" name="Message" required minlength="15" maxlength="3000" placeholder="What would you like to build?"></textarea></div>' +
   '<div class="field full">' + '<button type="submit" class="button button-primary"><span>Open email draft</span><span aria-hidden="true">↗</span></button>' +
