@@ -75,3 +75,21 @@ The Home Selected Work slider is the final project slider. Its design, motion, p
 Normal pages use `/brand/anza-social-preview.png`: a dedicated 1200×630 PNG with the existing AW mark, ANZA WORKS wordmark and Creative Digital Studio subtitle on #050505 with #C91422 accents. The logo asset is composed without redesign. Open Graph and Twitter images use absolute URLs from `site.origin`, with image alt text and appropriate MIME type/dimensions. Project case studies retain their real local WebP screenshots and corresponding dimensions/alt text. Favicon and Apple touch icon remain `/brand/anza-icon.png`.
 
 The pushed source and live metadata were inspected before this change. The live page pointed social image/canonical URLs to the future custom domain and omitted Twitter image metadata. This source fix has not been deployed; sharing previews can be cached by platforms and are only eligible to update after these files are published.
+
+## Integrated glass logo
+
+About, Services and Work use the local AW artwork as a rounded liquid-glass extrusion. About has the largest visual; Services and Work use progressively smaller stages in their introductions. The original red swoosh is extracted from the artwork's RGB/alpha and mapped in object space, while the white AW body retains neutral translucent glass. Source logo assets are unchanged.
+
+Only these three routes load the small lazy loader and scoped stylesheet. The WebGL module is imported when the stage intersects the viewport. Settings remain depth 30, size 60, speed 20, clockwise, chromatic 10, frost 14. Desktop from 900px with reduced motion off has slow rotation, pointer tilt and bounded mouse drag. Mobile and reduced motion render a static pose, without a continuous RAF or touch capture. The normal logo is the fallback for failed WebGL, shader/image loading or context loss.
+
+The alpha distance field and red mask are baked once on image load, with local reusable reflection/light textures. DPR is capped at 1.5 desktop / 1 mobile; render dimensions at 780px. Hidden/offscreen rendering pauses. Destroy releases RAF, observers, listeners, textures, shaders, program and buffer. The visual is decorative, cannot receive keyboard focus, and allows natural vertical touch scrolling.
+
+Validation: lint, typecheck, all 29 tests and production build pass. The integrated GLSL compiled, linked and rendered using an offline Mesa EGL ES2 studio-light approximation; the red source mask is visibly preserved. This is a shader check, not a browser screenshot. Responsive CSS was logically checked at 1440×900, 1024×768, 768×1024, 390×844 and 320×720; rendered browser QA remains unverified. All original public assets and protected interaction modules are byte-identical to the approved preview source. Home and Contact generated HTML are also unchanged.
+
+## Transparent glass compositing fix
+
+The original stage CSS painted #050505, and the WebGL framebuffer cleared to opaque #050505. The stage and canvas now have transparent CSS backgrounds. WebGL uses alpha:true and premultipliedAlpha:true, clears to RGBA(0,0,0,0), and outputs premultiplied RGB with ONE / ONE_MINUS_SRC_ALPHA blending. Rays missing the actual logo are discarded. The local studio-light plate remains only a material/refraction texture sampled on the object; there is no visible background pass.
+
+Placement, dimensions, motion, geometry, page backgrounds, source artwork and fallback image are unchanged. Mobile/static rendering uses the same transparent compositing. Fallback remains the original transparent AW PNG without a wrapper surface.
+
+Validation: all four required commands pass, including 29 tests. Actual GLSL was compiled, linked and rendered in an offline EGL ES2 framebuffer: every tested outside corner is RGBA(0,0,0,0), with 338,332 transparent pixels and 5,162 branded red pixels in a 600×600 sample. This is not browser visual verification. The required browser check was attempted but local preview access was blocked with ERR_BLOCKED_BY_CLIENT by the cloud browser's URL security policy. Browser visual verification at 1440×900, 1024×768, 768×1024, 390×844 and 320×720 remains incomplete.

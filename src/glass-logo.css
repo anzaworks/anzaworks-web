@@ -1,0 +1,13 @@
+/* Scoped to the three introductions; project cards and global UI are unchanged. */
+.glass-page-hero .glass-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);align-items:center;gap:40px}
+.glass-page-hero .glass-copy{min-width:0}
+.glass-page-hero h1{font-size:clamp(3rem,5.7vw,5.6rem);line-height:1.02}
+.glass-page-hero .lead{max-width:48ch}
+.glass-page-hero.glass-services .glass-intro{grid-template-columns:minmax(0,1fr) minmax(0,360px)}
+.glass-page-hero.glass-work .glass-intro{grid-template-columns:minmax(0,1fr) minmax(0,240px)}
+.glass-stage{position:relative;isolation:isolate;width:100%;max-width:520px;aspect-ratio:1;justify-self:center;overflow:hidden;background:transparent;touch-action:pan-y}
+.glass-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:transparent}
+.glass-fallback{position:absolute;width:76%;height:auto;left:12%;top:50%;transform:translateY(-50%);object-fit:contain}
+.glass-ready .glass-fallback{visibility:hidden}
+@media(max-width:1100px) and (min-width:900px){.glass-page-hero .glass-intro{grid-template-columns:minmax(0,1fr) minmax(0,400px);gap:24px}.glass-page-hero h1{font-size:clamp(3rem,5vw,4.5rem)}}
+@media(max-width:899px){.glass-page-hero .glass-intro,.glass-page-hero.glass-services .glass-intro,.glass-page-hero.glass-work .glass-intro{grid-template-columns:minmax(0,1fr);gap:24px}.glass-page-hero h1{font-size:clamp(2.6rem,9vw,5rem)}.glass-stage{max-width:280px}.glass-services .glass-stage{max-width:220px}.glass-work .glass-stage{max-width:160px}}

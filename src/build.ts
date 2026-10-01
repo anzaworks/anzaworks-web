@@ -12,7 +12,7 @@ const navItems = [["/", "Home"], ["/work/", "Work"], ["/services/", "Services"],
 
 const whatsappLink = (footer = false): string => '<a class="' + (footer ? 'whatsapp-link whatsapp-footer' : 'button button-outline whatsapp-link') + '" href="' + attr(site.whatsapp) + '" target="_blank" rel="noopener noreferrer" aria-label="Chat with Anza Works on WhatsApp"><img class="whatsapp-icon" src="/brand/whatsapp.svg" alt="" aria-hidden="true" width="20" height="20"><span>' + (footer ? 'WhatsApp' : 'Chat on WhatsApp') + '</span></a>';
 
-function page(path: string, title: string, description: string, body: string, options: { noindex?: boolean; type?: string; image?: { path: string; width: number; height: number; type: string; alt: string } } = {}): void {
+function page(path: string, title: string, description: string, body: string, options: { script?: string; stylesheet?: string; noindex?: boolean; type?: string; image?: { path: string; width: number; height: number; type: string; alt: string } } = {}): void {
   const url = site.origin + path;
   const image = options.image ?? {
     path: "/brand/anza-social-preview.png", width: 1200, height: 630,
@@ -51,7 +51,9 @@ function page(path: string, title: string, description: string, body: string, op
     '<link rel="stylesheet" href="/style.css">',
     path === "/" ? '<link rel="preload" href="/media/hero/anza-hero-poster.webp" as="image" type="image/webp" fetchpriority="high">' : "",
     '<script type="application/ld+json">' + JSON.stringify(jsonLd).replace(/</g, "\\u003c") + '</script>',
-    '<script type="module" src="/browser.js"></script>'
+    '<script type="module" src="/browser.js"></script>',
+    options.stylesheet ? '<link rel="stylesheet" href="' + attr(options.stylesheet) + '">' : "",
+    options.script ? '<script type="module" src="' + attr(options.script) + '"></script>' : ""
   ].join("");
   const pageNavItems = navItems;
   const header = '<a class="skip-link" href="#main">Skip to content</a><header class="site-header" id="header"><div class="shell nav-shell">' +
@@ -83,6 +85,12 @@ const pageHero = (label: string, title: string, copy: string): string =>
   '<section class="page-hero"><div class="shell"><p class="eyebrow reveal">' + label +
   '</p><h1 class="reveal">' + title + '</h1><p class="lead reveal">' + copy +
   '</p></div><div class="page-orbit" aria-hidden="true"></div></section>';
+
+const glassAssets = { script: "/glass-loader.js", stylesheet: "/glass-logo.css" };
+const glassHero = (kind: "about" | "services" | "work", label: string, title: string, copy: string): string =>
+  '<section class="page-hero glass-page-hero glass-' + kind + '"><div class="shell glass-intro"><div class="glass-copy"><p class="eyebrow reveal">' + label +
+  '</p><h1 class="reveal">' + title + '</h1><p class="lead reveal">' + copy +
+  '</p></div><div class="glass-stage" data-glass-logo aria-hidden="true"><img class="glass-fallback" src="/brand/anza-logo-main.png" alt="" width="920" height="650" decoding="async"></div></div><div class="page-orbit" aria-hidden="true"></div></section>';
 
 const projectImage = (project: Project, className = ""): string =>
   '<img class="' + className + '" src="' + attr(project.cover) + '" alt="' + attr(project.coverAlt) + '" width="' + project.coverWidth + '" height="' + project.coverHeight + '" loading="lazy" decoding="async">';
@@ -117,10 +125,11 @@ const home = '<section class="hero" id="hero"><div class="hero-ambient" aria-hid
   section("more-work", "05", "Portfolio archive", "THERE’S MORE<br>TO EXPLORE.", '<p class="lead">Seven public projects, from hospitality to evidence-driven applications, plus private business systems in progress.</p><div class="section-action">' + button("/work/", "Explore all work", "outline") + '</div>') + endCta;
 page("/", "Creative digital studio", site.description, home);
 
-const work = pageHero("Work / 01", "WORK WITH<br>A CLEAR PURPOSE.", "Public websites and applications, built around real tasks. Explore the interfaces and the thinking behind them.") +
+// Isolated visual experiment; no changes to any public page or navigation.
+const work = glassHero("work", "Work / 01", "WORK WITH<br>A CLEAR PURPOSE.", "Public websites and applications, built around real tasks. Explore the interfaces and the thinking behind them.") +
   section("projects", "01", "Public projects", "THE PORTFOLIO.", '<div class="project-grid real-project-grid">' + projects.map((p, i) => projectCard(p, i + 1)).join("") + '</div>') +
   section("private-systems", "02", "Private systems / In progress", "BEHIND<br>THE SCENES.", '<div class="private-system-grid">' + privateSystems.map(system => '<article class="private-system-card"><p class="eyebrow">' + esc(system.status) + '</p><h3>' + esc(system.title) + '</h3><p class="private-category">' + esc(system.category) + '</p><p>' + esc(system.description) + '</p></article>').join("") + '</div>') + endCta;
-page("/work/", "Work", "Seven public projects from Anza Works: hospitality websites, evidence applications and security governance interfaces.", work);
+page("/work/", "Work", "Seven public projects from Anza Works: hospitality websites, evidence applications and security governance interfaces.", work, glassAssets);
 
 projects.forEach((project, index) => {
   const next = projects[(index + 1) % projects.length]!;
@@ -132,17 +141,17 @@ projects.forEach((project, index) => {
   page("/work/" + project.slug + "/", project.title, project.summary, hero + overview + features + gallery + '<div class="shell project-live-action">' + liveLink(project) + '</div>' + nextBlock, { type: "case", image: { path: project.cover, width: project.coverWidth, height: project.coverHeight, type: "image/webp", alt: project.coverAlt } });
 });
 
-const servicesPage = pageHero("Services / 02", "WHAT I<br>BUILD.", "Websites, custom applications and internal tools, shaped around how people actually use them.") +
+const servicesPage = glassHero("services", "Services / 02", "WHAT I<br>BUILD.", "Websites, custom applications and internal tools, shaped around how people actually use them.") +
   section("services", "01", "Capabilities", "RIGHT TOOL.<br>RIGHT REASON.", '<div class="services-grid">' + services.map((s, i) => '<article class="service-tile reveal"><div class="tile-top"><span>0' + (i + 1) + '</span><small>' + esc(s[2]) + '</small></div><h3>' + esc(s[0]) + '</h3><p>' + esc(s[1]) + '</p><a href="/contact/" aria-label="Enquire about ' + attr(s[0]) + '">Discuss this service ↗</a></article>').join("") + '</div>') +
   section("examples", "02", "In practice", "SEE THE<br>WORK.", '<div class="case-columns"><p class="lead">Hotel Bonavista brings rooms and place together. Source Seal and Prism Jury organize complex evidence workflows into focused interfaces.</p><div>' + button("/work/", "View the portfolio", "outline") + '</div></div>') +
   section("process", "03", "Working together", "A CLEAR PATH<br>THROUGH THE WORK.", processContent) + endCta;
-page("/services/", "Services", "Web design, business and hospitality websites, custom applications, admin dashboards and POS systems from Anza Works.", servicesPage);
+page("/services/", "Services", "Web design, business and hospitality websites, custom applications, admin dashboards and POS systems from Anza Works.", servicesPage, glassAssets);
 
-const aboutPage = pageHero("About / 03", "DESIGN THE SURFACE.<br>BUILD THE SYSTEM.", "Anza Works is my independent practice for websites, web applications and practical business tools.") +
+const aboutPage = glassHero("about", "About / Anza Works", "DESIGN.<br>CODE.<br>PURPOSE.", "Anza Works is my independent practice for websites, web applications and practical business tools.") +
   section("studio", "01", "Who / Anza Works", "A PRACTICAL<br>POINT OF VIEW.", '<div class="case-columns"><p class="lead">I bring design and development into the same conversation.</p><div><p>A hospitality website needs to help someone imagine a stay. An application needs to make a demanding task easier to follow. An internal tool needs to fit the working day.</p><p>Those needs guide the content, the interface and the way the system is built.</p></div></div>') +
   section("approach", "02", "Approach", "MAKE IT CLEAR.<br>MAKE IT USEFUL.", processContent) +
   section("tools", "03", "Tools & capabilities", "A FOCUSED<br>TOOLKIT.", '<p class="lead">Responsive interfaces, accessible navigation and maintainable structure. This portfolio uses semantic HTML, CSS, TypeScript and a small Node.js static build.</p><div class="chip-row"><span>HTML</span><span>CSS</span><span>TypeScript</span><span>Node.js</span></div><div class="section-action">' + button("/work/", "Selected work", "outline") + '</div>') + endCta;
-page("/about/", "About", "Meet Anza Works: an independent design and development practice focused on websites, web applications and business systems.", aboutPage);
+page("/about/", "About", "Meet Anza Works: an independent design and development practice focused on websites, web applications and business systems.", aboutPage, glassAssets);
 
 page("/process/", "Process", "The Anza Works process now lives alongside our services.", pageHero("Process", "THE WAY<br>WE WORK.", "Understand the task, design and build, then review and hand over. The full approach is now part of Services.") + '<div class="shell utility-action">' + button("/services/#process", "Explore services & process") + '</div>', { noindex: true });
 
@@ -170,6 +179,8 @@ page("/error/", "Something went wrong", "An error occurred.",
   '<div class="shell utility-action">' + button("/", "Back to home") + '</div>', { noindex: true });
 copyFileSync(join(out, "404", "index.html"), join(out, "404.html"));
 copyFileSync(join(out, "error", "index.html"), join(out, "error.html"));
+for (const file of ["glass-logo.js", "glass-loader.js"]) copyFileSync(join(root, "build", file), join(out, file));
+copyFileSync(join(root, "src", "glass-logo.css"), join(out, "glass-logo.css"));
 
 const sitemapPaths = ["/", "/work/", ...projects.map(p => "/work/" + p.slug + "/"),
   "/services/", "/about/", "/contact/"];
