@@ -14,7 +14,7 @@ test('glass is integrated only into the three introductions; preview is removed'
  for(const route of ['index.html','contact/index.html','work/prism-jury/index.html']){
   assert.doesNotMatch(readFileSync('site/'+route,'utf8'),/glass-loader|glass-logo.css|data-glass-logo/);
  }
- for(const file of ['site/glass-preview','site/glass-preview.js','site/glass-preview.css','src/glass-preview.ts','src/glass-preview.css'])assert.equal(existsSync(file),false);
+ for(const file of ['site/glass-preview','site/glass-preview.js','site/glass-preview.css'])assert.equal(existsSync(file),false);
  for(const file of ['site/sitemap.xml','site/robots.txt','src/build.ts','README.md'])assert.doesNotMatch(readFileSync(file,'utf8'),/glass-preview/);
  assert.match(readFileSync('site/glass-loader.js','utf8'),/import\(".\/glass-logo.js"\)/);
  assert.doesNotMatch(readFileSync('site/browser.js','utf8'),/glass-logo/);
@@ -35,28 +35,29 @@ test('reference alpha SDF preserves the silhouette and an interior cutout',()=>{
  for(let i=0;i<w*h;i++)assert.equal(sdf[i*4+3],255);
 });
 
-function harness({webgl=true,compile=true,desktop=true,reduced=false}={}){
+function harness({webgl=true,compile=true,desktop=true,reduced=false,coarse=false,width=500,height=500}={}){
+ let nextFrame=0;const rotations=[];
  const classes=new Set(),status={textContent:''},frames=new Map(),observers=[],deleted=[],clears=[],blends=[],contexts=[];
- const gl=new Proxy({clearColor:(...v)=>clears.push(v),blendFunc:(...v)=>blends.push(v),createShader:()=>({}),getShaderParameter:()=>compile,createProgram:()=>({}),getProgramParameter:()=>true,createBuffer:()=>({}),createTexture:()=>({}),getAttribLocation:()=>0,getUniformLocation:()=>({}),deleteShader:s=>deleted.push('shader'),deleteProgram:()=>deleted.push('program'),deleteBuffer:()=>deleted.push('buffer'),deleteTexture:()=>deleted.push('texture'),drawArrays:()=>{gl.draws++},draws:0},{get(t,k){return k in t?t[k]:typeof k==='string'&&k===k.toUpperCase()?1:()=>{}}});
+ const gl=new Proxy({clearColor:(...v)=>clears.push(v),blendFunc:(...v)=>blends.push(v),createShader:()=>({}),getShaderParameter:()=>compile,createProgram:()=>({}),getProgramParameter:()=>true,createBuffer:()=>({}),createTexture:()=>({}),getAttribLocation:()=>0,getUniformLocation:(program,name)=>name,uniformMatrix3fv:(name,transpose,matrix)=>{if(name==='uRot')rotations.push([...matrix])},deleteShader:s=>deleted.push('shader'),deleteProgram:()=>deleted.push('program'),deleteBuffer:()=>deleted.push('buffer'),deleteTexture:()=>deleted.push('texture'),drawArrays:()=>{gl.draws++},draws:0},{get(t,k){return k in t?t[k]:typeof k==='string'&&k===k.toUpperCase()?1:()=>{}}});
  const ctx={fillRect(){},clearRect(){},drawImage(){},beginPath(){},roundRect(){},rect(){},fill(){},createLinearGradient:()=>({addColorStop(){}}),getImageData:(x,y,w,h)=>{const a=new Uint8ClampedArray(w*h*4);for(let yy=24;yy<h-24;yy++)for(let xx=24;xx<w-24;xx++)a[(yy*w+xx)*4+3]=255;return {data:a}}};
  const canvases=[];
  class Canvas extends EventTarget{constructor(){super();this.attrs={};this.width=1;this.height=1}setAttribute(k,v){this.attrs[k]=v}getContext(type,options){if(type==='webgl')contexts.push(options);return type==='webgl'?(webgl?gl:null):ctx}remove(){this.removed=true}setPointerCapture(id){this.capture=id}hasPointerCapture(id){return this.capture===id}releasePointerCapture(){this.capture=null}}
  const doc=new EventTarget();Object.assign(doc,{hidden:false,createElement:()=>{const c=new Canvas();canvases.push(c);return c}});
- const media=new EventTarget(),motion=new EventTarget();media.matches=desktop;motion.matches=reduced;
- globalThis.document=doc;globalThis.window={devicePixelRatio:2};globalThis.matchMedia=q=>q.includes('min-width')?media:motion;
- globalThis.requestAnimationFrame=fn=>{frames.set(frames.size+1,fn);return frames.size};globalThis.cancelAnimationFrame=id=>frames.delete(id);
- globalThis.ResizeObserver=class{constructor(fn){this.fn=fn;observers.push(this)}observe(){}disconnect(){this.disconnected=true}};
+ const media=new EventTarget(),motion=new EventTarget(),touch=new EventTarget();media.matches=desktop;motion.matches=reduced;touch.matches=coarse;
+ globalThis.document=doc;globalThis.window=Object.assign(new EventTarget(),{devicePixelRatio:2});globalThis.matchMedia=q=>q.includes('min-width')?media:q.includes('pointer: coarse')?touch:motion;
+ globalThis.requestAnimationFrame=fn=>{const id=++nextFrame;frames.set(id,fn);return id};globalThis.cancelAnimationFrame=id=>frames.delete(id);
+ globalThis.ResizeObserver=class{constructor(fn){this.fn=fn;observers.push(this)}observe(){}unobserve(){}disconnect(){this.disconnected=true}};
  globalThis.IntersectionObserver=globalThis.ResizeObserver;
  let image;globalThis.Image=class{constructor(){image=this;this.width=200;this.height=150}};
- const host={querySelector:()=>status,append(){},classList:{add:v=>classes.add(v),remove:v=>classes.delete(v)},getBoundingClientRect:()=>({width:500,height:500,left:0,top:0})};
+ const host={querySelector:()=>status,append(){},classList:{add:v=>classes.add(v),remove:v=>classes.delete(v)},getBoundingClientRect:()=>({width,height,left:0,top:0})};
  const event=(target,type,data={})=>{const e=new Event(type,{cancelable:true});Object.assign(e,data);target.dispatchEvent(e);return e};
- const run=()=>{const pending=[...frames.values()];frames.clear();pending.forEach(fn=>fn(100))};
+ const run=(time=100)=>{const pending=[...frames.values()];frames.clear();pending.forEach(fn=>fn(time))};
  const preview=initGlassLogo(host);
- return {preview,gl,frames,observers,deleted,clears,blends,contexts,doc,event,run,status,canvas:canvases[0],image,media,motion,classes};
+ return {preview,host,gl,frames,observers,deleted,clears,blends,contexts,rotations,doc,event,run,status,get canvas(){return canvases.find(c=>!c.removed&&c.attrs['aria-hidden'])},get image(){return image},canvases,media,motion,touch,classes};
 }
 test('WebGL failure preserves real-logo fallback and releases partial resources',()=>{
  for(const opts of [{webgl:false},{compile:false}]){
-  const h=harness(opts);assert.equal(h.frames.size,0);assert.ok(h.canvas.removed);
+  const h=harness(opts);assert.equal(h.frames.size,0);assert.ok(h.canvases[0].removed);
   assert.ok(!h.classes.has('glass-ready'));
   if(opts.compile===false){assert.ok(h.deleted.includes('program'));assert.ok(h.deleted.includes('shader'))}
   h.preview.destroy();
@@ -74,12 +75,60 @@ test('desktop pauses hidden/offscreen, respects motion changes and releases ever
  h.preview.destroy();assert.ok(h.observers.every(o=>o.disconnected));assert.equal(h.deleted.filter(x=>x==='texture').length,4);assert.ok(h.deleted.includes('buffer')&&h.deleted.includes('program'));assert.equal(h.frames.size,0);
  const before=h.gl.draws;h.event(h.doc,'visibilitychange');assert.equal(h.gl.draws,before);
 });
-test('mobile and reduced motion paint one static pose without continuous RAF',()=>{
- for(const opts of [{desktop:false},{reduced:true}]){
-  const h=harness(opts);h.image.onload();assert.equal(h.frames.size,0);assert.equal(h.gl.draws,1);
-  h.event(h.canvas,'pointerdown',{pointerType:'touch',button:0,pointerId:1});assert.equal(h.canvas.capture,undefined);
-  h.event(h.canvas,'webglcontextlost');assert.ok(h.canvas.removed);assert.ok(!h.classes.has('glass-ready'));
+test('mobile rotates for five seconds without pointer input and resumes after scrolling or hiding',()=>{
+ const h=harness({desktop:false,width:280,height:280});h.image.onload();
+ assert.equal(h.canvas.width,350);assert.equal(h.frames.size,1);
+ h.run(100);const first=h.rotations[0];
+ for(let i=1;i<=300;i++)h.run(100+i*1000/60);
+ assert.notDeepEqual(h.rotations.at(-1),first,'actual 3D rotation matrix changes over five seconds');
+ assert.ok(h.gl.draws>=140&&h.gl.draws<=160,'mobile draws about 30 fps');
+ h.event(h.canvas,'pointerdown',{pointerType:'touch',button:0,pointerId:1});assert.equal(h.canvas.capture,undefined);
+ h.event(h.canvas,'pointercancel');assert.equal(h.frames.size,1,'touch cancellation does not stop auto-rotation');
+ for(let i=0;i<5;i++){
+  h.observers[1].fn([{isIntersecting:false}]);assert.equal(h.frames.size,0);
+  const before=h.gl.draws;h.run(7000);assert.equal(h.gl.draws,before);
+  h.observers[1].fn([{isIntersecting:true}]);h.observers[1].fn([{isIntersecting:true}]);assert.equal(h.frames.size,1);
+  h.doc.hidden=true;h.event(h.doc,'visibilitychange');assert.equal(h.frames.size,0);
+  h.doc.hidden=false;h.event(h.doc,'visibilitychange');h.event(h.doc,'visibilitychange');assert.equal(h.frames.size,1);
  }
+ h.run(8000);assert.ok(h.gl.draws>150);h.preview.destroy();assert.equal(h.frames.size,0);
+});
+test('reduced motion uses the original static PNG with no WebGL and resumes after preference changes',()=>{
+ const h=harness({desktop:false,reduced:true});
+ assert.equal(h.contexts.length,0);assert.equal(h.frames.size,0);assert.equal(h.canvas,undefined);
+ h.motion.matches=false;h.event(h.motion,'change');h.image.onload();h.run();
+ assert.equal(h.contexts.length,1);assert.ok(h.classes.has('glass-ready'));assert.equal(h.frames.size,1);
+ h.motion.matches=true;h.event(h.motion,'change');assert.equal(h.frames.size,0);assert.equal(h.canvas,undefined);assert.ok(!h.classes.has('glass-ready'));
+ h.motion.matches=false;h.event(h.motion,'change');h.image.onload();h.run();assert.equal(h.frames.size,1);
+ h.preview.destroy();
+});
+test('every requested viewport can animate with the same approved stage sizes',()=>{
+ for(const [width,height] of [[430,932],[390,844],[360,800],[320,720],[768,1024],[1440,900]]){
+  for(const stage of [width<900?280:520,width<900?220:360,width<900?160:240]){
+   const h=harness({desktop:width>=900,width:stage,height:stage});h.image.onload();h.run();
+   assert.equal(h.frames.size,1,`${width}×${height}`);assert.ok(h.gl.draws>0);h.preview.destroy();
+  }
+ }
+ const h=harness({desktop:true,coarse:true});h.image.onload();assert.equal(h.canvas.width,520);h.run();assert.equal(h.frames.size,1);h.preview.destroy();
+});
+test('one stage gets only one canvas and loop; failure and context loss retain static fallback',()=>{
+ const h=harness({desktop:false});assert.equal(initGlassLogo(h.host),h.preview);assert.equal(h.contexts.length,1);
+ h.image.onload();h.run();assert.equal(h.frames.size,1);
+ h.event(h.canvas,'webglcontextlost');assert.equal(h.frames.size,0);assert.equal(h.canvas,undefined);assert.ok(!h.classes.has('glass-ready'));
+ h.preview.destroy();
+});
+test('lazy loader initializes once after rapid intersection events and cleans up on navigation',async()=>{
+ const h=harness({desktop:false});h.preview.destroy();
+ h.doc.querySelectorAll=()=>[h.host];
+ await import('../build/glass-loader.js');
+ const lazy=h.observers.at(-1);const before=h.contexts.length;
+ lazy.fn([{target:h.host,isIntersecting:false}]);assert.equal(h.contexts.length,before);
+ lazy.fn([{target:h.host,isIntersecting:true}]);lazy.fn([{target:h.host,isIntersecting:true}]);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(h.contexts.length,before+1);h.image.onload();h.run();assert.equal(h.frames.size,1);
+ lazy.fn([{target:h.host,isIntersecting:true}]);assert.equal(h.contexts.length,before+1);
+ h.event(window,'pagehide',{persisted:true});assert.equal(h.frames.size,1,'BFCache keeps the owner intact');
+ h.event(window,'pagehide',{persisted:false});assert.equal(h.frames.size,0);assert.ok(lazy.disconnected);
 });
 
 test('glass framebuffer and wrappers remain transparent with premultiplied compositing',()=>{

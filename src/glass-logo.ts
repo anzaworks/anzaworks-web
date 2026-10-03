@@ -392,7 +392,33 @@ export function bakeBrandMask(rgba: Uint8ClampedArray): Uint8Array {
     return mask;
 }
 
-export function initGlassLogo(host: HTMLElement): { destroy(): void } {
+type GlassEffect = { destroy(): void };
+const instances = new WeakMap<HTMLElement, GlassEffect>();
+
+/** Exactly one owner per stage. Reduced motion keeps the original transparent PNG. */
+export function initGlassLogo(host: HTMLElement): GlassEffect {
+    const existing = instances.get(host);
+    if (existing) return existing;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+    const controller = new AbortController();
+    let renderer: GlassEffect | null = null;
+    let destroyed = false;
+    const update = () => {
+        renderer?.destroy(); renderer = null;
+        if (!destroyed && !reduced.matches) renderer = initGlassRenderer(host);
+    };
+    const effect = { destroy() {
+        if (destroyed) return;
+        destroyed = true; controller.abort(); renderer?.destroy(); renderer = null;
+        instances.delete(host);
+    } };
+    instances.set(host, effect);
+    reduced.addEventListener("change", update, { signal: controller.signal });
+    update();
+    return effect;
+}
+
+function initGlassRenderer(host: HTMLElement): GlassEffect {
     const canvas = document.createElement("canvas");
     canvas.setAttribute("aria-hidden", "true");
     host.append(canvas);
@@ -406,15 +432,15 @@ export function initGlassLogo(host: HTMLElement): { destroy(): void } {
     const shaders: WebGLShader[] = [], textures: WebGLTexture[] = [];
     let program: WebGLProgram | null = null, buffer: WebGLBuffer | null = null;
     let resizeObserver: ResizeObserver | null = null, intersection: IntersectionObserver | null = null;
-    let frame = 0, last = 0, elapsed = 0, visible = true, destroyed = false, ready = false;
+    let frame = 0, last = 0, lastPaint = 0, elapsed = 0, visible = true, destroyed = false, ready = false;
     let sdfHeight = 1, aspect = 1, width = 1, height = 1;
     let tiltX = 0, tiltY = 0, targetX = 0, targetY = 0, dragYaw = 0, dragPitch = 0;
     let drag: { id: number; x: number; y: number } | null = null;
     const desktop = matchMedia("(min-width: 900px)");
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+    const coarse = matchMedia("(pointer: coarse)");
     const image = new Image();
-    const moving = () => desktop.matches && !reduced.matches;
-    const stop = () => { cancelAnimationFrame(frame); frame = 0; last = 0; };
+    const mobile = () => !desktop.matches || coarse.matches;
+    const stop = () => { cancelAnimationFrame(frame); frame = 0; last = 0; lastPaint = 0; };
     const release = () => {
         const id = drag?.id;
         drag = null;
@@ -491,14 +517,14 @@ export function initGlassLogo(host: HTMLElement): { destroy(): void } {
         gl.uniform3f(uniform("uTint"),1,.98,.95);
         const paint = () => {
             if (destroyed || !ready || !visible || document.hidden) return;
-            const yaw = (moving() ? elapsed * GLASS_SETTINGS.speed/50*.5 : 0) + dragYaw + tiltX - .24;
-            const pitch = .08 + dragPitch - tiltY + (moving() ? Math.sin(elapsed*.2)*.06 : 0);
+            const yaw = elapsed * GLASS_SETTINGS.speed/50*.5 + dragYaw + tiltX - .24;
+            const pitch = .08 + dragPitch - tiltY + Math.sin(elapsed*.2)*.06;
             const rotation = rotYXZ(yaw, pitch, 0);
             gl.viewport(0,0,width,height); gl.clear(gl.COLOR_BUFFER_BIT);
             gl.uniform2f(uniform("uRes"),width,height); gl.uniform1f(uniform("uAspect"),width/height);
             gl.uniformMatrix3fv(uniform("uRot"),false,rotation);
             gl.uniformMatrix3fv(uniform("uRotT"),false,transpose3(rotation));
-            gl.uniform3f(uniform("uCenter"),0,moving()?Math.sin(elapsed*.5)*.015:0,-5);
+            gl.uniform3f(uniform("uCenter"),0,Math.sin(elapsed*.5)*.015,-5);
             gl.uniform1f(uniform("uScale"),.60*5*Math.tan(Math.PI/8)/Math.max(1,aspect));
             gl.uniform1f(uniform("uBoundR"),Math.hypot(aspect,1,.12)+.025);
             gl.uniform2f(uniform("uLogoHalf"),aspect,1);
@@ -513,19 +539,21 @@ export function initGlassLogo(host: HTMLElement): { destroy(): void } {
             last = time; elapsed += dt;
             const k = 1-Math.exp(-5*dt);
             tiltX += (targetX-tiltX)*k; tiltY += (targetY-tiltY)*k;
-            paint();
-            if (moving()) frame = requestAnimationFrame(tick); else last = 0;
+            // Mobile keeps the same time-based speed while drawing about 30 fps.
+            if (!mobile() || !lastPaint || time-lastPaint >= 1000/30-.5) {
+                paint(); lastPaint = time;
+            }
+            frame = requestAnimationFrame(tick);
         };
         const wake = () => {
             if (destroyed || !ready || !visible || document.hidden) return;
-            if (moving()) { if (!frame) frame = requestAnimationFrame(tick); }
-            else paint();
+            if (!frame) frame = requestAnimationFrame(tick);
         };
         const resize = () => {
-            const dpr = Math.min(window.devicePixelRatio || 1, moving()?1.5:1);
+            const dpr = Math.min(window.devicePixelRatio || 1, mobile()?1.25:1.5);
             const rect = host.getBoundingClientRect();
-            width = Math.max(1,Math.min(780,Math.round(rect.width*dpr)));
-            height = Math.max(1,Math.min(780,Math.round(rect.height*dpr)));
+            width = Math.max(1,Math.min(mobile()?520:780,Math.round(rect.width*dpr)));
+            height = Math.max(1,Math.min(mobile()?520:780,Math.round(rect.height*dpr)));
             canvas.width = width; canvas.height = height; wake();
         };
         const mode = () => { stop(); release(); targetX=targetY=tiltX=tiltY=0; dragYaw=dragPitch=0; resize();
@@ -536,15 +564,15 @@ export function initGlassLogo(host: HTMLElement): { destroy(): void } {
             if (!visible) { stop(); release(); } else wake();
         }); intersection.observe(host);
         document.addEventListener("visibilitychange",()=>{if(document.hidden){stop();release();}else wake();},{signal});
-        desktop.addEventListener("change",mode,{signal}); reduced.addEventListener("change",mode,{signal});
+        desktop.addEventListener("change",mode,{signal}); coarse.addEventListener("change",mode,{signal});
         canvas.addEventListener("webglcontextlost",event=>{event.preventDefault();fallback();},{signal});
         canvas.addEventListener("pointerdown",event=>{
-            if(!moving() || event.pointerType!=="mouse" || event.button!==0 || drag) return;
+            if(event.pointerType!=="mouse" || event.button!==0 || drag) return;
             drag={id:event.pointerId,x:event.clientX,y:event.clientY};
             canvas.setPointerCapture(event.pointerId);host.classList.add("glass-dragging");
         },{signal});
         canvas.addEventListener("pointermove",event=>{
-            if(!moving() || event.pointerType!=="mouse") return;
+            if(event.pointerType!=="mouse") return;
             if(drag?.id===event.pointerId){
                 dragYaw=Math.max(-.5,Math.min(.5,dragYaw+(event.clientX-drag.x)*.003));
                 dragPitch=Math.max(-.3,Math.min(.3,dragPitch+(event.clientY-drag.y)*.003));
