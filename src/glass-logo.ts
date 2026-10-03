@@ -550,10 +550,10 @@ function initGlassRenderer(host: HTMLElement): GlassEffect {
             if (!frame) frame = requestAnimationFrame(tick);
         };
         const resize = () => {
-            const dpr = Math.min(window.devicePixelRatio || 1, mobile()?1.25:1.5);
+            const dpr = Math.min(window.devicePixelRatio || 1, mobile()?2:1.5);
             const rect = host.getBoundingClientRect();
-            width = Math.max(1,Math.min(mobile()?520:780,Math.round(rect.width*dpr)));
-            height = Math.max(1,Math.min(mobile()?520:780,Math.round(rect.height*dpr)));
+            width = Math.max(1,Math.min(mobile()?640:780,Math.round(rect.width*dpr)));
+            height = Math.max(1,Math.min(mobile()?640:780,Math.round(rect.height*dpr)));
             canvas.width = width; canvas.height = height; wake();
         };
         const mode = () => { stop(); release(); targetX=targetY=tiltX=tiltY=0; dragYaw=dragPitch=0; resize();

@@ -35,7 +35,7 @@ test('reference alpha SDF preserves the silhouette and an interior cutout',()=>{
  for(let i=0;i<w*h;i++)assert.equal(sdf[i*4+3],255);
 });
 
-function harness({webgl=true,compile=true,desktop=true,reduced=false,coarse=false,width=500,height=500}={}){
+function harness({webgl=true,compile=true,desktop=true,reduced=false,coarse=false,width=500,height=500,dpr=2}={}){
  let nextFrame=0;const rotations=[];
  const classes=new Set(),status={textContent:''},frames=new Map(),observers=[],deleted=[],clears=[],blends=[],contexts=[];
  const gl=new Proxy({clearColor:(...v)=>clears.push(v),blendFunc:(...v)=>blends.push(v),createShader:()=>({}),getShaderParameter:()=>compile,createProgram:()=>({}),getProgramParameter:()=>true,createBuffer:()=>({}),createTexture:()=>({}),getAttribLocation:()=>0,getUniformLocation:(program,name)=>name,uniformMatrix3fv:(name,transpose,matrix)=>{if(name==='uRot')rotations.push([...matrix])},deleteShader:s=>deleted.push('shader'),deleteProgram:()=>deleted.push('program'),deleteBuffer:()=>deleted.push('buffer'),deleteTexture:()=>deleted.push('texture'),drawArrays:()=>{gl.draws++},draws:0},{get(t,k){return k in t?t[k]:typeof k==='string'&&k===k.toUpperCase()?1:()=>{}}});
@@ -44,7 +44,7 @@ function harness({webgl=true,compile=true,desktop=true,reduced=false,coarse=fals
  class Canvas extends EventTarget{constructor(){super();this.attrs={};this.width=1;this.height=1}setAttribute(k,v){this.attrs[k]=v}getContext(type,options){if(type==='webgl')contexts.push(options);return type==='webgl'?(webgl?gl:null):ctx}remove(){this.removed=true}setPointerCapture(id){this.capture=id}hasPointerCapture(id){return this.capture===id}releasePointerCapture(){this.capture=null}}
  const doc=new EventTarget();Object.assign(doc,{hidden:false,createElement:()=>{const c=new Canvas();canvases.push(c);return c}});
  const media=new EventTarget(),motion=new EventTarget(),touch=new EventTarget();media.matches=desktop;motion.matches=reduced;touch.matches=coarse;
- globalThis.document=doc;globalThis.window=Object.assign(new EventTarget(),{devicePixelRatio:2});globalThis.matchMedia=q=>q.includes('min-width')?media:q.includes('pointer: coarse')?touch:motion;
+ globalThis.document=doc;globalThis.window=Object.assign(new EventTarget(),{devicePixelRatio:dpr});globalThis.matchMedia=q=>q.includes('min-width')?media:q.includes('pointer: coarse')?touch:motion;
  globalThis.requestAnimationFrame=fn=>{const id=++nextFrame;frames.set(id,fn);return id};globalThis.cancelAnimationFrame=id=>frames.delete(id);
  globalThis.ResizeObserver=class{constructor(fn){this.fn=fn;observers.push(this)}observe(){}unobserve(){}disconnect(){this.disconnected=true}};
  globalThis.IntersectionObserver=globalThis.ResizeObserver;
@@ -77,7 +77,7 @@ test('desktop pauses hidden/offscreen, respects motion changes and releases ever
 });
 test('mobile rotates for five seconds without pointer input and resumes after scrolling or hiding',()=>{
  const h=harness({desktop:false,width:280,height:280});h.image.onload();
- assert.equal(h.canvas.width,350);assert.equal(h.frames.size,1);
+ assert.equal(h.canvas.width,560);assert.equal(h.frames.size,1);
  h.run(100);const first=h.rotations[0];
  for(let i=1;i<=300;i++)h.run(100+i*1000/60);
  assert.notDeepEqual(h.rotations.at(-1),first,'actual 3D rotation matrix changes over five seconds');
@@ -109,7 +109,7 @@ test('every requested viewport can animate with the same approved stage sizes',(
    assert.equal(h.frames.size,1,`${width}×${height}`);assert.ok(h.gl.draws>0);h.preview.destroy();
   }
  }
- const h=harness({desktop:true,coarse:true});h.image.onload();assert.equal(h.canvas.width,520);h.run();assert.equal(h.frames.size,1);h.preview.destroy();
+ const h=harness({desktop:true,coarse:true});h.image.onload();assert.equal(h.canvas.width,640);h.run();assert.equal(h.frames.size,1);h.preview.destroy();
 });
 test('one stage gets only one canvas and loop; failure and context loss retain static fallback',()=>{
  const h=harness({desktop:false});assert.equal(initGlassLogo(h.host),h.preview);assert.equal(h.contexts.length,1);
@@ -145,4 +145,29 @@ test('glass framebuffer and wrappers remain transparent with premultiplied compo
   assert.doesNotMatch(rule,/box-shadow|border:/);
  }
  h.preview.destroy();
+});
+
+
+test('mobile DPR caps at 2 with sharp 390px profile stages and native lower-DPR rendering',()=>{
+ for(const dpr of [2,3,4]){
+  for(const [stage,internal] of [[280,560],[220,440],[160,320]]){
+   const h=harness({desktop:false,width:stage,height:stage,dpr});h.image.onload();
+   assert.equal(h.canvas.width,internal);assert.equal(h.canvas.height,internal);
+   assert.equal(h.frames.size,1);h.preview.destroy();
+  }
+ }
+ for(const dpr of [1,1.5]){
+  const h=harness({desktop:false,width:280,height:280,dpr});h.image.onload();
+  assert.equal(h.canvas.width,280*dpr);h.preview.destroy();
+ }
+ const capped=harness({desktop:false,width:500,height:500,dpr:4});capped.image.onload();
+ assert.equal(capped.canvas.width,640);assert.equal(capped.canvas.height,640);capped.preview.destroy();
+});
+test('desktop retains DPR 1.5, dimension cap 780 and its existing frame cadence',()=>{
+ for(const [stage,internal] of [[240,360],[360,540],[520,780],[800,780]]){
+  const h=harness({desktop:true,width:stage,height:stage,dpr:4});h.image.onload();
+  assert.equal(h.canvas.width,internal);assert.equal(h.canvas.height,internal);
+  for(let i=0;i<61;i++)h.run(100+i*1000/60);
+  assert.equal(h.gl.draws,61);assert.equal(h.frames.size,1);h.preview.destroy();
+ }
 });
